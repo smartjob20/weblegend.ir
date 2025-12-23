@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WebLegend Checkout | خرید حرفه‌ای</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/font-face.css" rel="stylesheet" type="text/css" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- 1. RESET & BASIC SETUP --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #212529;
+            --text-light: #868e96;
+            --border-color: #e9ecef;
+            --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            --radius: 16px;
+            --anim-speed: 0.4s;
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 480px) {
+            .app-container {
+                height: 90vh;
+                border-radius: 24px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            }
+        }
+
+        /* --- 2. HEADER & STEPPER --- */
+        .app-header {
+            padding: 15px 25px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .brand-logo {
+            text-align: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 0 10px;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 0;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 33%;
+        }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            background: #fff;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+
+        .step-label {
+            font-size: 10px;
+            color: var(--text-light);
+            font-weight: bold;
+        }
+
+        .step-item.active .step-circle {
+            border-color: var(--accent-color);
+            background: var(--accent-color);
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+        }
+        .step-item.active .step-label { color: var(--accent-color); }
+        
+        .step-item.completed .step-circle {
+            border-color: var(--success-color);
+            background: var(--success-color);
+            color: #fff;
+        }
+
+        /* --- 3. MAIN CONTENT --- */
+        .content-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .step-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform var(--anim-speed) cubic-bezier(0.4, 0.0, 0.2, 1), opacity var(--anim-speed);
+            opacity: 0;
+            transform: translateX(50px);
+            pointer-events: none;
+            background: #fff;
+        }
+
+        .step-panel.active-panel {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+            z-index: 2;
+        }
+
+        .step-panel.prev-panel {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        /* --- 4. STEP 1: PRODUCT GALLRY & DETAILS (NEW) --- */
+        
+        /* گالری مربعی */
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* مربعی کامل */
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .gallery-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        /* دکمه‌های ناوبری عکس */
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: var(--primary-color);
+            font-size: 14px;
+            z-index: 2;
+            transition: all 0.2s;
+        }
+        .gallery-nav:active { transform: translateY(-50%) scale(0.9); }
+        .nav-prev { right: 10px; }
+        .nav-next { left: 10px; }
+
+        /* هدر محصول و قیمت */
+        .product-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .p-title-lg {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 0;
+            line-height: 1.4;
+            flex: 1;
+            padding-left: 10px;
+        }
+
+        .p-price-badge {
+            background: #f1f3f5;
+            color: var(--primary-color);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        /* توضیحات */
+        .short-desc {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 12px;
+            font-weight: bold;
+            padding: 0;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .full-desc-content {
+            display: none;
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.8;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-right: 3px solid var(--accent-color);
+        }
+
+        /* انتخابگرها */
+        .options-container {
+            margin-top: 10px;
+        }
+
+        .option-row {
+            margin-bottom: 20px;
+        }
+
+        .option-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* رنگ‌ها */
+        .colors-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .color-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .color-circle.selected {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+        }
+        
+        /* تیک داخل رنگ انتخاب شده */
+        .color-circle.selected::after {
+            content: '\f00c';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 14px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* سایزها */
+        .chips { display: flex; gap: 10px; }
+        .chip {
+            padding: 8px 24px;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+            font-weight: 500;
+        }
+        .chip.selected {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
+        }
+
+        /* --- 5. STEP 2 & 3: FORM & SUMMARY (UNCHANGED LOGIC) --- */
+        .form-section {
+            background: #fff;
+            padding: 5px; /* تنظیم جزئی برای تراز */
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 14px;
+            transition: 0.3s;
+            background: #fdfdfd;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-light);
+            background: #eefbf3;
+            padding: 10px;
+            border-radius: 8px;
+            color: #27ae60;
+        }
+
+        .checkout-summary {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        .bill-row.total {
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+            margin-top: 15px;
+            font-weight: 800;
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .success-animation {
+            margin: 30px auto;
+            width: 80px;
+            height: 80px;
+            background: #eefbf3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #27ae60;
+            box-shadow: 0 0 0 10px rgba(39, 174, 96, 0.1);
+        }
+
+        /* --- 6. FOOTER BUTTONS --- */
+        .footer-actions {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 16px;
+            border-radius: 14px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            flex: 2;
+            box-shadow: 0 8px 20px -5px rgba(44, 62, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f3f5;
+            color: var(--text-light);
+            flex: 1;
+        }
+        
+        .btn-pay {
+            background: var(--success-color);
+            box-shadow: 0 8px 20px -5px rgba(39, 174, 96, 0.4);
+        }
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <header class="app-header">
+        <div class="brand-logo">WEBLEGEND <i class="fa-solid fa-gem" style="color:var(--accent-color)"></i></div>
+        <div class="stepper">
+            <div class="step-item active" id="step-indicator-1">
+                <div class="step-circle"><i class="fa-solid fa-shirt"></i></div>
+                <span class="step-label">انتخاب</span>
+            </div>
+            <div class="step-item" id="step-indicator-2">
+                <div class="step-circle"><i class="fa-solid fa-address-card"></i></div>
+                <span class="step-label">اطلاعات</span>
+            </div>
+            <div class="step-item" id="step-indicator-3">
+                <div class="step-circle"><i class="fa-solid fa-credit-card"></i></div>
+                <span class="step-label">پرداخت</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="content-area">
+        
+        <section class="step-panel active-panel" id="panel-1">
+            
+            <div class="gallery-container">
+                <button class="gallery-nav nav-next" onclick="nextImage()"><i class="fa-solid fa-chevron-left"></i></button>
+                <img id="main-product-img" src="" class="gallery-img" alt="Product Image">
+                <button class="gallery-nav nav-prev" onclick="prevImage()"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <div style="padding: 0 10px;">
+                <div class="product-header-row">
+                    <h1 class="p-title-lg">تی‌شرت نخی پریمیوم کالکشن جدید</h1>
+                    <span class="p-price-badge">۴۸۰,۰۰۰ ت</span>
+                </div>
+
+                <p class="short-desc">
+                    این محصول با پارچه ۱۰۰٪ نخ پنبه ارگانیک تهیه شده و مناسب برای فصل‌های گرم سال است. دوخت صنعتی و تن‌خور مدرن.
+                </p>
+
+                <button class="expand-btn" onclick="toggleDescription()">
+                    <span id="desc-btn-text">توضیحات کامل محصول</span>
+                    <i id="desc-icon" class="fa-solid fa-chevron-down"></i>
+                </button>
+
+                <div id="full-description" class="full-desc-content">
+                    <p>این تی‌شرت از بهترین الیاف موجود در بازار تهیه شده و در برابر شستشوهای مکرر تغییر رنگ و سایز نمی‌دهد. طراحی یقه گرد و آستین کوتاه، استایلی کژوال و شیک را برای شما فراهم می‌کند. </p>
+                    <ul style="padding-right: 20px; margin: 10px 0;">
+                        <li>ضد حساسیت</li>
+                        <li>بدون آبرفت</li>
+                        <li>رنگ ثابت</li>
+                    </ul>
+                    <p>راهنمای شستشو: با آب ۳۰ درجه شسته شود.</p>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+                <div class="options-container">
+                    
+                    <div class="option-row">
+                        <span class="option-title">انتخاب رنگ:</span>
+                        <div class="colors-wrapper">
+                            <div class="color-circle selected" style="background-color: #212121;" onclick="selectColor(this, 0)"></div>
+                            <div class="color-circle" style="background-color: #9E9E9E;" onclick="selectColor(this, 1)"></div>
+                            <div class="color-circle" style="background-color: #f5f5f5; border: 1px solid #ddd;" onclick="selectColor(this, 2)"></div>
+                        </div>
+                    </div>
+
+                    <div class="option-row">
+                        <span class="option-title">انتخاب سایز:</span>
+                        <div class="chips">
+                            <div class="chip" onclick="selectSize(this)">M</div>
+                            <div class="chip selected" onclick="selectSize(this)">L</div>
+                            <div class="chip" onclick="selectSize(this)">XL</div>
+                            <div class="chip" onclick="selectSize(this)">XXL</div>
+                        </div>
+                    </div>
+
+                </div>
+                <div style="height: 20px;"></div> </div>
+        </section>
+
+        <section class="step-panel" id="panel-2">
+            <div class="form-section">
+                <h3 style="margin:0 0 20px 0; font-size:16px; color:var(--primary-color);">اطلاعات ارسال</h3>
+                
+                <div class="input-group">
+                    <label class="input-label">شماره موبایل</label>
+                    <input type="tel" class="input-field" placeholder="0912..." inputmode="numeric">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">نام و نام خانوادگی</label>
+                    <input type="text" class="input-field" placeholder="مثلا: علی محمدی">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">آدرس دقیق</label>
+                    <textarea class="input-field" rows="3" placeholder="استان، شهر، خیابان..."></textarea>
+                </div>
+
+                <div class="trust-badge">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    اطلاعات شما با پروتکل SSL رمزگذاری می‌شود.
+                </div>
+            </div>
+        </section>
+
+        <section class="step-panel" id="panel-3">
+            <div class="checkout-summary">
+                <div class="success-animation">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h2 style="font-size:18px; margin-bottom: 20px; color:var(--primary-color);">آماده پرداخت</h2>
+                
+                <div class="bill-row">
+                    <span>مبلغ محصول</span>
+                    <span>۴۸۰,۰۰۰ تومان</span>
+                </div>
+                <div class="bill-row">
+                    <span>هزینه ارسال</span>
+                    <span>۳۰,۰۰۰ تومان</span>
+                </div>
+                <div class="bill-row total">
+                    <span>مبلغ قابل پرداخت</span>
+                    <span>۵۱۰,۰۰۰ تومان</span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #999;">
+                پشتیبانی توسط <strong style="color:var(--primary-color)">WebLegend</strong>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer-actions">
+        <button class="btn btn-secondary hidden" id="btn-back" onclick="prevStep()">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+            تایید و ادامه
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+    </footer>
+
+</div>
+
+<script>
+    // --- 1. Gallery & Product Logic ---
+    
+    // آرایه عکس‌ها: فرض بر این است که هر رنگ یک عکس اصلی دارد.
+    // ایندکس 0: مشکی، ایندکس 1: طوسی، ایندکس 2: سفید
+    // عکس‌های بیشتر هم می‌توانند در اسلایدر باشند.
+    const productImages = [
+        "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80", // مشکی
+        "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=600&q=80", // طوسی (پیش فرض)
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80"  // سفید
+    ];
+
+    let currentImgIndex = 0; // شروع با عکس اول
+
+    function updateImage() {
+        const imgEl = document.getElementById('main-product-img');
+        imgEl.style.opacity = '0'; // افکت محو شدن
+        setTimeout(() => {
+            imgEl.src = productImages[currentImgIndex];
+            imgEl.style.opacity = '1';
+        }, 200);
+    }
+
+    // مقداردهی اولیه
+    updateImage();
+
+    // دکمه‌های گالری
+    function nextImage() {
+        currentImgIndex = (currentImgIndex + 1) % productImages.length;
+        updateImage();
+        // نکته: اگر بخواهیم با تغییر عکس، دکمه رنگ هم عوض شود باید منطق اضافه کنیم، 
+        // اما اینجا فقط عکس را عوض میکنیم تا کاربر همه عکس‌ها را ببیند.
+    }
+
+    function prevImage() {
+        currentImgIndex = (currentImgIndex - 1 + productImages.length) % productImages.length;
+        updateImage();
+    }
+
+    // انتخاب رنگ (و پرش به عکس مربوطه)
+    function selectColor(el, imgIndex) {
+        // تغییر استایل دکمه رنگ
+        document.querySelectorAll('.color-circle').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // تغییر عکس به رنگ مربوطه
+        currentImgIndex = imgIndex;
+        updateImage();
+    }
+
+    // تاگل توضیحات
+    function toggleDescription() {
+        const content = document.getElementById('full-description');
+        const icon = document.getElementById('desc-icon');
+        const text = document.getElementById('desc-btn-text');
+
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            text.innerText = 'توضیحات کامل محصول';
+        } else {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            text.innerText = 'بستن توضیحات';
+        }
+    }
+
+    // انتخاب سایز (لاجیک قبلی)
+    function selectSize(el) {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+    }
+
+
+    // --- 2. Wizard & Navigation Logic (Unchanged) ---
+    
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            document.getElementById(`panel-${currentStep}`).classList.add('prev-panel');
+            document.getElementById(`panel-${currentStep}`).classList.remove('active-panel');
+
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('completed');
+            document.getElementById(`step-indicator-${currentStep}`).classList.remove('active');
+
+            currentStep++;
+
+            document.getElementById(`panel-${currentStep}`).classList.add('active-panel');
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
+
+            updateButtons();
+        } else {
+            alert('اتصال به درگاه بانکی...');
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`panel-${currentStep}`).classList.remove('active-panel');
+            document.getElementById(`step-indicator-${currentStep}`).classList.remove('active');
+            
+            currentStep--;
+
+            document.getElementById(`panel-${currentStep}`).classList.remove('prev-panel');
+            document.getElementById(`panel-${currentStep}`).classList.add('active-panel');
+
+            document.getElementById(`step-indicator-${currentStep}`).classList.remove('completed');
+            document.getElementById(`step-indicator-${currentStep}`).classList.add('active');
+
+            updateButtons();
+        }
+    }
+
+    function updateButtons() {
+        const btnBack = document.getElementById('btn-back');
+        const btnNext = document.getElementById('btn-next');
+
+        if (currentStep === 1) {
+            btnBack.classList.add('hidden');
+        } else {
+            btnBack.classList.remove('hidden');
+        }
+
+        if (currentStep === totalSteps) {
+            btnNext.innerHTML = 'پرداخت آنلاین <i class="fa-solid fa-lock"></i>';
+            btnNext.classList.remove('btn-primary');
+            btnNext.classList.add('btn-pay');
+        } else {
+            btnNext.innerHTML = 'تایید و ادامه <i class="fa-solid fa-arrow-left"></i>';
+            btnNext.classList.remove('btn-pay');
+            btnNext.classList.add('btn-primary');
+        }
+    }
+</script>
+
+</body>
+</html>
