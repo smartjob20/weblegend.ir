@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>پورتال مشتریان | WEB LEGEND VIP</title>
+    <link rel="icon" type="image/png" href="img/logo01.png">
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        brand: { 
+                            gold: '#D4AF37', 
+                            goldHover: '#F9E59E',
+                            dark: '#050505', 
+                            panel: '#0F1115',
+                            lightPanel: '#F3F4F6'
+                        } 
+                    },
+                    fontFamily: { sans: ['Vazirmatn', 'sans-serif'] },
+                    boxShadow: {
+                        'gold': '0 4px 20px -2px rgba(212, 175, 55, 0.3)',
+                        'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+                    },
+                    screens: {
+                        'xs': '380px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { transition: background-color 0.3s ease, color 0.3s ease; -webkit-tap-highlight-color: transparent; }
+        
+        /* Glass Effect */
+        .glass { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        .dark .glass { 
+            background: rgba(25, 25, 25, 0.6); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); 
+        }
+
+        /* Sidebar Link */
+        .sidebar-link { transition: all 0.3s ease; }
+        .sidebar-link:hover { transform: translateX(-5px); }
+        .sidebar-link.active { 
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, transparent 100%); 
+            color: #D4AF37; 
+            border-right: 3px solid #D4AF37; 
+        }
+
+        /* Bottom Nav Link (Mobile) */
+        .bottom-nav-link { transition: all 0.2s ease; position: relative; }
+        .bottom-nav-link.active { color: #D4AF37; }
+        .bottom-nav-link.active::after {
+            content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 4px; background: #D4AF37; border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 10px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #333; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Card Shine */
+        .credit-card { background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); position: relative; overflow: hidden; }
+        .credit-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 60%); transform: rotate(45deg); pointer-events: none; }
+        
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+        /* Store Specific Styles */
+        .upload-zone { border: 2px dashed #cbd5e1; transition: all 0.3s; }
+        .upload-zone:hover { border-color: #D4AF37; background-color: rgba(212, 175, 55, 0.05); }
+        .dark .upload-zone { border-color: #333; }
+        .dark .upload-zone:hover { border-color: #D4AF37; }
+        
+        .img-preview-item { position: relative; width: 70px; height: 70px; border-radius: 12px; overflow: hidden; border: 1px solid #ddd; flex-shrink: 0; }
+        .img-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .img-remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.9); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; z-index: 10; }
+        
+        .feature-chip { transition: all 0.2s; cursor: pointer; user-select: none; }
+        .feature-chip.selected { background-color: #D4AF37; color: black; border-color: #D4AF37; font-weight: bold; box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+        
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; position: relative; }
+        .color-swatch:hover { transform: scale(1.1); }
+        .color-swatch.selected { border-color: #D4AF37; transform: scale(1.15); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        .color-swatch.selected::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-shadow: 0 0 2px black; font-size: 12px; }
+        
+        .attr-block { background: rgba(0,0,0,0.03); border: 1px dashed #cbd5e1; padding: 12px; border-radius: 12px; position: relative; animation: fadeIn 0.3s ease; margin-bottom: 10px; }
+        .dark .attr-block { background: rgba(255,255,255,0.03); border-color: #333; }
+        .attr-remove { position: absolute; top: -8px; left: -8px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .attr-badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; background: rgba(0,0,0,0.05); color: #666; display: inline-flex; align-items: center; gap: 3px; border: 1px solid rgba(0,0,0,0.05); }
+        .dark .attr-badge { background: rgba(255,255,255,0.1); color: #aaa; border-color: rgba(255,255,255,0.05); }
+
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Mask for scrolling fade effect */
+        .mask-linear-fade {
+            mask-image: linear-gradient(to left, transparent, black 15px, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to left, transparent, black 15px, black 90%, transparent);
+        }
+    </style>
+</head>
+<body class="font-sans h-screen overflow-hidden flex text-sm bg-gray-50 text-gray-800 dark:bg-black dark:text-white">
+
+    <div id="page-loader" class="fixed inset-0 z-[100] bg-gray-50 dark:bg-black flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-20 h-20 border-4 border-gray-200 dark:border-white/10 rounded-full"></div>
+            <div class="w-20 h-20 border-4 border-brand-gold border-t-transparent rounded-full animate-spin absolute top-0 left-0 shadow-[0_0_20px_rgba(212,175,55,0.5)]"></div>
+        </div>
+        <p class="mt-4 text-brand-gold text-xs font-bold tracking-[0.3em] animate-pulse">CONNECTING TO DB...</p>
+    </div>
+
+    <aside class="hidden lg:flex w-72 bg-white dark:bg-brand-panel border-l border-gray-200 dark:border-white/5 flex-col z-20 transition-all duration-300 shadow-xl dark:shadow-none">
+        <div class="p-6 flex items-center justify-start gap-3 border-b border-gray-100 dark:border-white/5 h-20">
+            <div class="w-10 h-10 bg-gradient-to-br from-brand-gold to-yellow-700 rounded-xl flex items-center justify-center text-black font-black text-xl shadow-gold">W</div>
+            <div>
+                <h1 class="font-black tracking-tighter text-lg text-gray-900 dark:text-white">WEB <span class="text-brand-gold">LEGEND</span></h1>
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest">Client Portal</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-8 px-3 space-y-2">
+            <button onclick="switchTab('dashboard')" class="sidebar-link active w-full flex items-center justify-start gap-4 px-4 py-3 text-gray-500 dark:text-gray-400 hover:text-brand-gold dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition group">
+                <i class="fas fa-th-large text-base group-hover:scale-110 transition"></i> <span class="font-bold">داشبورد من</span>
+            </button>
+            <button onclick="switchTab('store')" class="sidebar-link w-full flex items-center justify-start gap-4 px-4 py-3 text-gray-500 dark:text-gray-400 hover:text-brand-gold dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition group">
+                <i class="fas fa-store text-base group-hover:scale-110 transition"></i> <span class="font-bold">فروشگاه من</span>
+                <span class="flex absolute left-4 bg-brand-gold/20 text-brand-gold text-[9px] px-2 py-0.5 rounded-full font-black">جدید</span>
+            </button>
+            <button onclick="switchTab('invoices')" class="sidebar-link w-full flex items-center justify-start gap-4 px-4 py-3 text-gray-500 dark:text-gray-400 hover:text-brand-gold dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition group">
+                <i class="fas fa-file-invoice-dollar text-base group-hover:scale-110 transition"></i> <span class="font-bold">فاکتورها</span>
+            </button>
+            <button onclick="switchTab('support')" class="sidebar-link w-full flex items-center justify-start gap-4 px-4 py-3 text-gray-500 dark:text-gray-400 hover:text-brand-gold dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl transition group">
+                <i class="fas fa-headset text-base group-hover:scale-110 transition"></i> <span class="font-bold">پشتیبانی VIP</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-100 dark:border-white/5">
+            <button onclick="logout()" class="flex items-center justify-start gap-3 w-full px-4 py-3 text-red-500/80 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-500 rounded-xl transition">
+                <i class="fas fa-sign-out-alt text-lg"></i> <span class="font-bold">خروج</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 bg-gray-50 dark:bg-black relative flex flex-col h-full overflow-hidden transition-colors duration-300">
+        
+        <div class="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-brand-gold/5 to-transparent pointer-events-none"></div>
+
+        <header class="h-16 lg:h-20 flex justify-between items-center px-4 lg:px-8 z-10 border-b border-gray-200 dark:border-white/5 bg-white/50 dark:bg-black/50 backdrop-blur-sm sticky top-0">
+            <div class="flex items-center gap-3">
+                <div class="lg:hidden w-8 h-8 bg-gradient-to-br from-brand-gold to-yellow-700 rounded-lg flex items-center justify-center text-black font-black text-sm shadow-gold">W</div>
+                <div>
+                    <h2 class="text-base lg:text-xl font-black text-gray-800 dark:text-white transition-colors" id="greeting-text">خوش آمدید</h2>
+                    <p class="text-[10px] lg:text-xs text-gray-500" id="current-date">...</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="themeToggleBtn" class="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-brand-gold shadow-sm hover:shadow-md transition-all">
+                    <i class="fas fa-moon hidden dark:block"></i>
+                    <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+                </button>
+
+                <div class="hidden md:flex items-center gap-2 bg-white/60 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 shadow-sm">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 font-mono tracking-wider">ONLINE</span>
+                </div>
+                <div onclick="logout()" class="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-900 border border-white/50 dark:border-white/20 flex items-center justify-center shadow-md cursor-pointer">
+                    <i class="fas fa-user text-gray-500 dark:text-gray-400"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth pb-24 lg:pb-8 relative">
+            
+            <div id="no-project-msg" class="hidden h-full flex flex-col items-center justify-center text-center opacity-0 transition-opacity duration-700">
+                <div class="w-24 h-24 bg-gray-200 dark:bg-white/5 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                    <i class="fas fa-folder-plus text-4xl text-gray-400 dark:text-gray-600"></i>
+                </div>
+                <h3 class="text-2xl lg:text-3xl font-black text-gray-800 dark:text-white mb-2">شروع کنید</h3>
+                <p class="text-gray-500 mb-8 max-w-md text-sm">شما وارد پنل شده‌اید. می‌توانید از بخش فروشگاه، فروش خود را آغاز کنید.</p>
+                <button onclick="switchTab('store')" class="bg-brand-gold hover:bg-brand-goldHover text-black font-black px-8 py-4 rounded-xl shadow-gold transition hover:scale-105 flex items-center gap-2">
+                    <i class="fas fa-store"></i> ساخت فروشگاه سریع
+                </button>
+            </div>
+
+            <div id="view-dashboard" class="space-y-6 opacity-0 transition-opacity duration-700 hidden animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass rounded-[2rem] p-6 lg:p-8 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <span class="bg-brand-gold/20 text-brand-gold px-3 py-1 rounded-full text-[10px] font-bold border border-brand-gold/30 tracking-wider">PROJECT STATUS</span>
+                                <h2 class="text-2xl lg:text-4xl font-black text-gray-900 dark:text-white mt-3 leading-tight" id="project-title">...</h2>
+                                <p class="text-gray-500 dark:text-gray-400 mt-2 text-sm flex items-center gap-2">
+                                    <i class="fas fa-user-circle text-brand-gold"></i> <span id="client-name">...</span>
+                                </p>
+                            </div>
+                            <div class="text-right hidden md:block">
+                                <p class="text-xs text-gray-400 mb-1">کد پروژه</p>
+                                <p class="font-mono text-gray-700 dark:text-white font-bold" id="project-id">#WL-...</p>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8 items-center mt-8">
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-2">
+                                        <span class="text-gray-500 dark:text-gray-400">پیشرفت کلی</span>
+                                        <span class="text-gray-900 dark:text-white font-bold" id="progress-percent">0%</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-gray-200 dark:bg-white/5 rounded-full overflow-hidden">
+                                        <div id="progress-bar" class="h-full bg-gradient-to-r from-brand-gold to-yellow-600 w-0 transition-all duration-1000 shadow-[0_0_10px_#D4AF37]"></div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-black/30 rounded-xl p-4 border border-gray-100 dark:border-white/5 flex items-center gap-4 shadow-sm">
+                                    <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 animate-pulse">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-500 uppercase">وضعیت فعلی</p>
+                                        <p class="text-sm font-bold text-gray-800 dark:text-white" id="status-text">...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-32 flex justify-center md:justify-end relative">
+                                <canvas id="progressChart"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <span class="text-2xl font-black text-gray-800 dark:text-white" id="chart-center-text">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="credit-card rounded-[2rem] p-8 flex flex-col justify-between border border-white/10 shadow-2xl text-white min-h-[220px]">
+                        <div class="flex justify-between items-start">
+                            <i class="fas fa-wifi text-white/20 text-2xl rotate-90"></i>
+                            <span class="text-brand-gold font-black text-lg italic tracking-widest">WebLegend</span>
+                        </div>
+                        <div class="my-6">
+                            <p class="text-xs text-gray-400 mb-1 uppercase tracking-widest">مانده بدهی (تومان)</p>
+                            <h3 class="text-3xl font-mono font-bold text-white tracking-tight" id="debt-amount">0</h3>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase mb-1">کل قرارداد</p>
+                                <p class="text-sm font-mono text-gray-300" id="total-amount">0</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-gray-400 uppercase mb-1">پرداخت شده</p>
+                                <p class="text-sm font-mono text-green-400" id="paid-amount">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-store" class="space-y-6 hidden animate-fade-in">
+                
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 lg:mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fas fa-store text-brand-gold"></i> مدیریت فروشگاه
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-1">محصولات خود را اضافه و مدیریت کنید</p>
+                    </div>
+                    <button onclick="openProductModal()" class="w-full md:w-auto bg-brand-gold hover:bg-brand-goldHover text-black font-black px-6 py-3 rounded-xl shadow-gold transition hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <i class="fas fa-plus-circle"></i> افزودن محصول جدید
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+                    <div class="bg-white dark:bg-[#111] p-4 lg:p-5 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-right gap-3 lg:gap-4 shadow-sm">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500"><i class="fas fa-box"></i></div>
+                        <div><span class="text-xs text-gray-500 block">محصولات</span><span class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white" id="store-stats-products">0</span></div>
+                    </div>
+                    <div class="bg-white dark:bg-[#111] p-4 lg:p-5 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-right gap-3 lg:gap-4 shadow-sm">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-500/10 rounded-full flex items-center justify-center text-green-500"><i class="fas fa-shopping-cart"></i></div>
+                        <div><span class="text-xs text-gray-500 block">سفارشات</span><span class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white" id="store-stats-orders">0</span></div>
+                    </div>
+                    <div class="bg-white dark:bg-[#111] p-4 lg:p-5 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-right gap-3 lg:gap-4 shadow-sm">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold"><i class="fas fa-coins"></i></div>
+                        <div><span class="text-xs text-gray-500 block">درآمد کل</span><span class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white" id="store-stats-revenue">0</span></div>
+                    </div>
+                    <div class="bg-white dark:bg-[#111] p-4 lg:p-5 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-right gap-3 lg:gap-4 shadow-sm">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-500"><i class="fas fa-eye"></i></div>
+                        <div><span class="text-xs text-gray-500 block">بازدید لینک‌ها</span><span class="text-lg lg:text-xl font-bold text-gray-900 dark:text-white" id="store-stats-views">...</span></div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-lg text-gray-800 dark:text-white mt-8 mb-4 border-r-4 border-brand-gold pr-3">محصولات شما</h3>
+                <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6 pb-20">
+                    </div>
+
+                <h3 class="font-bold text-lg text-gray-800 dark:text-white mt-12 mb-4 border-r-4 border-green-500 pr-3">آخرین سفارشات</h3>
+                <div class="glass rounded-2xl overflow-hidden border border-gray-100 dark:border-white/5">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-sm">
+                            <thead class="bg-gray-50 dark:bg-white/5 text-gray-500 text-xs uppercase font-bold">
+                                <tr>
+                                    <th class="p-4 whitespace-nowrap">شماره</th>
+                                    <th class="p-4 whitespace-nowrap">محصول</th>
+                                    <th class="p-4 whitespace-nowrap">مشتری</th>
+                                    <th class="p-4 whitespace-nowrap">مبلغ</th>
+                                    <th class="p-4 whitespace-nowrap">وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body" class="divide-y divide-gray-100 dark:divide-white/5">
+                                <tr><td colspan="5" class="p-8 text-center text-gray-500">سفارشی یافت نشد</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-invoices" class="space-y-6 hidden animate-fade-in">
+                <div class="glass rounded-[2rem] p-8 border border-gray-100 dark:border-white/5">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <i class="fas fa-file-invoice-dollar text-brand-gold"></i> وضعیت مالی پروژه
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-1">جزئیات پرداخت‌ها و فاکتورهای پروژه طراحی سایت</p>
+                        </div>
+                        <div class="bg-green-500/10 text-green-500 px-4 py-2 rounded-xl font-bold text-sm border border-green-500/20">
+                            <span id="inv-status-text">نرمال</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-gray-50 dark:bg-black/30 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <span class="text-xs text-gray-500 block mb-2">مبلغ کل قرارداد</span>
+                            <span class="text-xl font-black text-gray-800 dark:text-white font-mono" id="inv-total">0</span>
+                            <span class="text-[10px] text-gray-400 mr-1">تومان</span>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-black/30 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <span class="text-xs text-gray-500 block mb-2">پرداخت شده</span>
+                            <span class="text-xl font-black text-green-500 font-mono" id="inv-paid">0</span>
+                            <span class="text-[10px] text-gray-400 mr-1">تومان</span>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-black/30 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
+                            <span class="text-xs text-gray-500 block mb-2">باقیمانده (تعهد)</span>
+                            <span class="text-xl font-black text-red-500 font-mono" id="inv-debt">0</span>
+                            <span class="text-[10px] text-gray-400 mr-1">تومان</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right">
+                            <thead class="text-gray-400 text-xs uppercase border-b border-gray-200 dark:border-white/10">
+                                <tr>
+                                    <th class="py-4 px-2 whitespace-nowrap">شرح پرداخت</th>
+                                    <th class="py-4 px-2 whitespace-nowrap">تاریخ</th>
+                                    <th class="py-4 px-2 whitespace-nowrap">مبلغ (تومان)</th>
+                                    <th class="py-4 px-2 whitespace-nowrap">وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm font-medium text-gray-700 dark:text-gray-300 divide-y divide-gray-100 dark:divide-white/5">
+                                <tr>
+                                    <td class="py-4 px-2 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-500"><i class="fas fa-check"></i></div>پیش پرداخت اولیه</td>
+                                    <td class="py-4 px-2 font-mono text-xs opacity-70">۱۴۰۲/۱۰/۱۵</td>
+                                    <td class="py-4 px-2 font-mono" id="inv-row-paid">0</td>
+                                    <td class="py-4 px-2"><span class="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded text-xs">موفق</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="py-4 px-2 flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400"><i class="fas fa-clock"></i></div>تسویه نهایی (پس از تحویل)</td>
+                                    <td class="py-4 px-2 font-mono text-xs opacity-70">---</td>
+                                    <td class="py-4 px-2 font-mono opacity-50" id="inv-row-debt">0</td>
+                                    <td class="py-4 px-2"><span class="bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 px-2 py-1 rounded text-xs">در انتظار</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-support" class="space-y-6 hidden animate-fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass rounded-[2rem] p-8 border border-gray-100 dark:border-white/5">
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-crown text-brand-gold"></i> پشتیبانی VIP
+                        </h3>
+                        <p class="text-gray-500 text-sm leading-relaxed mb-8">شما به عنوان مشتری ویژه وب لجند، اولویت پاسخگویی دارید.</p>
+                        <div class="space-y-4">
+                            <a href="tel:09175913293" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 transition group border border-transparent hover:border-brand-gold/30">
+                                <div class="w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 group-hover:scale-110 transition"><i class="fas fa-phone-alt"></i></div>
+                                <div><h4 class="font-bold text-gray-800 dark:text-white">تماس مستقیم</h4><p class="text-xs text-gray-500 mt-1 dir-ltr text-right">0917 591 3293</p></div>
+                            </a>
+                            <a href="https://t.me/WebLegendSupport" target="_blank" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 transition group border border-transparent hover:border-brand-gold/30">
+                                <div class="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-500 group-hover:scale-110 transition"><i class="fab fa-telegram"></i></div>
+                                <div><h4 class="font-bold text-gray-800 dark:text-white">چت با کارشناس فنی</h4><p class="text-xs text-gray-500 mt-1">پاسخگویی سریع در تلگرام</p></div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="glass rounded-[2rem] p-8 border border-gray-100 dark:border-white/5">
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white mb-6">ارسال تیکت سریع</h3>
+                        <form onsubmit="event.preventDefault(); alert('تیکت شما ثبت شد.');" class="space-y-4">
+                            <div><label class="text-xs text-gray-500 mb-2 block">موضوع</label><select class="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-white focus:border-brand-gold focus:outline-none"><option>مشکل فنی</option><option>سوال مالی</option></select></div>
+                            <div><label class="text-xs text-gray-500 mb-2 block">توضیحات</label><textarea rows="4" class="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm text-gray-800 dark:text-white focus:border-brand-gold focus:outline-none placeholder-gray-400"></textarea></div>
+                            <button class="w-full bg-brand-gold hover:bg-brand-goldHover text-black font-black py-3 rounded-xl shadow-gold transition transform hover:-translate-y-1">ارسال درخواست</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 w-full bg-white/90 dark:bg-brand-panel/90 backdrop-blur-md border-t border-gray-200 dark:border-white/10 z-50 flex justify-around items-center py-3 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <button onclick="switchTab('dashboard')" class="bottom-nav-link active flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-th-large text-xl"></i>
+            <span class="text-[9px] font-bold">داشبورد</span>
+        </button>
+        <button onclick="switchTab('store')" class="bottom-nav-link flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-store text-xl"></i>
+            <span class="text-[9px] font-bold">فروشگاه</span>
+        </button>
+        <button onclick="openProductModal()" class="flex items-center justify-center -mt-8 w-14 h-14 bg-brand-gold text-black rounded-full shadow-[0_4px_15px_rgba(212,175,55,0.4)] border-4 border-gray-50 dark:border-black transform active:scale-90 transition">
+            <i class="fas fa-plus text-2xl"></i>
+        </button>
+        <button onclick="switchTab('invoices')" class="bottom-nav-link flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-file-invoice-dollar text-xl"></i>
+            <span class="text-[9px] font-bold">فاکتور</span>
+        </button>
+        <button onclick="switchTab('support')" class="bottom-nav-link flex flex-col items-center gap-1 text-gray-400">
+            <i class="fas fa-headset text-xl"></i>
+            <span class="text-[9px] font-bold">پشتیبانی</span>
+        </button>
+    </nav>
+
+    <div id="product-modal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111] w-full max-w-3xl rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-200 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold"><i class="fas fa-cube"></i></div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white" id="modal-title">ساخت محصول</h3>
+                </div>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form id="product-form" class="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs text-gray-500 mb-2">نام محصول</label>
+                        <input type="text" id="prod-name" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white focus:border-brand-gold outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2">قیمت (تومان)</label>
+                        <input type="number" id="prod-price" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white focus:border-brand-gold outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-2">هزینه ارسال (تومان)</label>
+                        <input type="number" id="prod-shipping" value="0" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white focus:border-brand-gold outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2">تصاویر محصول (حداکثر ۷ عکس)</label>
+                    <div class="upload-zone rounded-xl p-6 text-center cursor-pointer relative" onclick="document.getElementById('image-upload-input').click()">
+                        <input type="file" id="image-upload-input" class="hidden" accept="image/*" multiple onchange="handleImageUpload(this)">
+                        <div id="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
+                            <p class="text-xs text-gray-500">برای آپلود کلیک کنید (فشرده‌سازی خودکار WebP)</p>
+                        </div>
+                    </div>
+                    <div id="image-previews-container" class="flex flex-wrap gap-2 mt-4"></div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-2">توضیحات محصول</label>
+                    <textarea id="prod-desc" rows="3" class="w-full p-3 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-white/10 text-gray-800 dark:text-white focus:border-brand-gold outline-none resize-none"></textarea>
+                </div>
+                <div class="bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-white/5">
+                    <label class="block text-xs text-brand-gold font-bold mb-3 uppercase tracking-widest">ویژگی‌های متغیر (اختیاری)</label>
+                    <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        <button type="button" onclick="addAttributeBlock('colors')" class="bg-white dark:bg-black border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:border-brand-gold transition shadow-sm">+ رنگ</button>
+                        <button type="button" onclick="addAttributeBlock('sizes')" class="bg-white dark:bg-black border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:border-brand-gold transition shadow-sm">+ سایز</button>
+                        <button type="button" onclick="addAttributeBlock('custom')" class="bg-white dark:bg-black border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:border-brand-gold transition shadow-sm">+ ویژگی دلخواه</button>
+                    </div>
+                    <div id="attributes-container" class="space-y-3"></div>
+                </div>
+            </form>
+            <div class="p-6 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/50 flex justify-end gap-3">
+                <button onclick="closeProductModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white px-4 py-2 text-sm font-bold">انصراف</button>
+                <button id="btn-save-product" onclick="saveProduct()" class="bg-brand-gold hover:bg-white hover:scale-105 text-black font-black px-8 py-2 rounded-xl transition transform shadow-lg flex items-center gap-2">
+                    <i class="fas fa-save"></i> <span>ذخیره نهایی</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="link-modal" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111] w-full max-w-md rounded-3xl border border-brand-gold/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] text-center p-8 relative">
+            <button onclick="document.getElementById('link-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            
+            <div class="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500 text-3xl mx-auto mb-4">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-2">لینک محصول آماده است!</h3>
+            
+            <div class="bg-gray-100 dark:bg-black/50 p-4 rounded-xl border border-gray-200 dark:border-white/10 flex items-center gap-2 mb-6">
+                <input type="text" id="generated-link" class="bg-transparent border-none outline-none w-full text-left dir-ltr text-brand-gold font-mono text-sm" readonly>
+                <button onclick="copyLink()" class="text-gray-500 hover:text-white"><i class="fas fa-copy"></i></button>
+            </div>
+
+            <div id="qrcode" class="flex justify-center mb-6 p-4 bg-white rounded-xl w-fit mx-auto"></div>
+
+            <a href="#" id="preview-btn" target="_blank" class="block w-full bg-brand-gold hover:bg-brand-goldHover text-black font-black py-3 rounded-xl transition">
+                مشاهده صفحه محصول <i class="fas fa-external-link-alt ml-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        let progressChartInstance = null;
+        let currentUser = null;
+        let uploadedImages = []; 
+        let editingProductId = null; 
+
+        // INIT
+        function initTheme() {
+            const html = document.documentElement;
+            if (localStorage.theme === 'dark') html.classList.add('dark'); else html.classList.remove('dark');
+            document.getElementById('themeToggleBtn').addEventListener('click', () => {
+                html.classList.toggle('dark');
+                localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+            });
+        }
+        initTheme();
+
+        function updateDate() {
+            const date = new Date().toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('current-date').innerText = date;
+            const hour = new Date().getHours();
+            let greeting = hour < 12 ? "صبح بخیر" : (hour < 19 ? "عصر بخیر" : "شب بخیر");
+            document.getElementById('greeting-text').innerText = `${greeting}، خوش اومدید`;
+        }
+        updateDate();
+
+        async function checkAuthAndLoad() {
+            const loader = document.getElementById('page-loader');
+            const safetyTimeout = setTimeout(() => { if (loader) loader.style.display = 'none'; }, 10000);
+
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) { window.location.href = 'index.html'; return; }
+                currentUser = user;
+
+                // Load Project
+                const { data: projectData } = await supabase.from('projects').select('*').eq('owner_phone', user.email);
+                
+                // Load Store
+                loadStoreProducts();
+                loadStoreOrders();
+
+                clearTimeout(safetyTimeout);
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.style.display = 'none', 500);
+
+                if (projectData && projectData.length > 0) {
+                    document.getElementById('view-dashboard').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('view-dashboard').classList.add('animate-fade-in'), 10);
+                    updateUI(projectData[0]);
+                } else {
+                    document.getElementById('no-project-msg').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('no-project-msg').classList.remove('opacity-0'), 100);
+                }
+            } catch (err) {
+                console.error("System Error:", err);
+                loader.style.display = 'none';
+            }
+        }
+        checkAuthAndLoad();
+
+        function updateUI(data) {
+            document.getElementById('client-name').innerText = data.client_name || "کاربر گرامی";
+            document.getElementById('project-title').innerText = data.project_name || "پروژه فعال";
+            document.getElementById('status-text').innerText = data.status || "در حال بررسی";
+            
+            const progress = data.progress || 0;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-percent').innerText = `${progress}%`;
+            document.getElementById('chart-center-text').innerText = `${progress}%`;
+
+            const formatMoney = (n) => new Intl.NumberFormat('fa-IR').format(n);
+            document.getElementById('total-amount').innerText = formatMoney(data.total_price || 0);
+            document.getElementById('paid-amount').innerText = formatMoney(data.paid_amount || 0);
+            document.getElementById('debt-amount').innerText = formatMoney((data.total_price || 0) - (data.paid_amount || 0));
+            document.getElementById('inv-total').innerText = formatMoney(data.total_price || 0);
+            document.getElementById('inv-paid').innerText = formatMoney(data.paid_amount || 0);
+            document.getElementById('inv-debt').innerText = formatMoney((data.total_price || 0) - (data.paid_amount || 0));
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            if(progressChartInstance) progressChartInstance.destroy();
+            progressChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['تکمیل', 'باقیمانده'],
+                    datasets: [{
+                        data: [progress, 100 - progress],
+                        backgroundColor: ['#D4AF37', document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, cutout: '80%', plugins: { legend: { display: false } } }
+            });
+        }
+
+        // DYNAMIC ATTRIBUTES
+        const PRESETS = {
+            colors: { label: 'رنگ', options: ['#000000', '#FFFFFF', '#FF0000', '#0000FF', '#FFFF00', '#008000', '#808080'] },
+            sizes: { label: 'سایز', options: ['S', 'M', 'L', 'XL', 'XXL'] }
+        };
+
+        window.addAttributeBlock = (type, existingValues = null, customLabel = '') => {
+            const container = document.getElementById('attributes-container');
+            const blockId = 'attr-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'attr-block';
+            div.dataset.type = type;
+            div.id = blockId;
+
+            let contentHTML = '';
+            
+            if (type === 'custom') {
+                contentHTML = `
+                    <input type="text" class="custom-label w-full bg-transparent border-b border-gray-300 dark:border-white/10 text-xs font-bold mb-2 outline-none focus:border-brand-gold" placeholder="عنوان ویژگی (مثلاً جنس)" value="${customLabel}">
+                    <input type="text" class="custom-values w-full bg-transparent border-b border-gray-300 dark:border-white/10 text-xs outline-none focus:border-brand-gold" placeholder="مقادیر (با کاما جدا کنید)" value="${existingValues ? existingValues.join(',') : ''}">
+                `;
+            } else {
+                const preset = PRESETS[type];
+                contentHTML = `<p class="text-xs text-gray-500 mb-2 font-bold">${preset.label}</p><div class="flex flex-wrap gap-2">`;
+                preset.options.forEach(opt => {
+                    const isSelected = existingValues && existingValues.includes(opt);
+                    const selectedClass = isSelected ? 'selected' : '';
+                    if (type === 'colors') {
+                        contentHTML += `<div class="color-swatch ${selectedClass}" style="background-color:${opt}; border:${opt==='#FFFFFF'?'1px solid #ddd':'none'}" data-val="${opt}" onclick="this.classList.toggle('selected')"></div>`;
+                    } else {
+                        contentHTML += `<div class="feature-chip border border-gray-300 dark:border-white/10 px-3 py-1 rounded-lg text-xs cursor-pointer ${selectedClass}" data-val="${opt}" onclick="this.classList.toggle('selected')">${opt}</div>`;
+                    }
+                });
+                contentHTML += `</div>`;
+            }
+            div.innerHTML = `<div class="attr-remove" onclick="document.getElementById('${blockId}').remove()"><i class="fas fa-times"></i></div>${contentHTML}`;
+            container.appendChild(div);
+        };
+
+        // IMAGE HANDLER
+        const compressImage = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; 
+                        const scale = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scale;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/webp', 0.7)); 
+                    }
+                }
+            })
+        };
+
+        window.handleImageUpload = async (input) => {
+            if (input.files) {
+                if (uploadedImages.length + input.files.length > 7) {
+                    alert("حداکثر ۷ عکس می‌توانید آپلود کنید.");
+                    return;
+                }
+                document.getElementById('upload-placeholder').innerHTML = '<i class="fas fa-spinner fa-spin"></i> فشرده‌سازی...';
+                for (let i = 0; i < input.files.length; i++) {
+                    const compressed = await compressImage(input.files[i]);
+                    uploadedImages.push(compressed);
+                }
+                document.getElementById('upload-placeholder').innerHTML = '<i class="fas fa-cloud-upload-alt text-4xl text-gray-300 dark:text-gray-600 mb-3"></i><p class="text-xs text-gray-500">برای آپلود کلیک کنید</p>';
+                renderImagePreviews();
+            }
+        };
+
+        function renderImagePreviews() {
+            const container = document.getElementById('image-previews-container');
+            container.innerHTML = '';
+            uploadedImages.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'img-preview-item';
+                item.innerHTML = `<img src="${img}"><div class="img-remove-btn" onclick="removeImage(${index})"><i class="fas fa-times"></i></div>`;
+                container.appendChild(item);
+            });
+        }
+
+        window.removeImage = (index) => {
+            uploadedImages.splice(index, 1);
+            renderImagePreviews();
+        };
+
+        // CRUD
+        window.openProductModal = (productToEdit = null) => {
+            document.getElementById('product-modal').classList.remove('hidden');
+            const saveBtnText = document.querySelector('#btn-save-product span');
+            const title = document.getElementById('modal-title');
+            document.getElementById('attributes-container').innerHTML = ''; 
+
+            if (productToEdit) {
+                editingProductId = productToEdit.id;
+                title.innerText = "ویرایش محصول";
+                saveBtnText.innerText = "بروزرسانی";
+                document.getElementById('prod-name').value = productToEdit.name;
+                document.getElementById('prod-price').value = productToEdit.price;
+                document.getElementById('prod-shipping').value = productToEdit.shipping_cost || 0;
+                document.getElementById('prod-desc').value = productToEdit.description || '';
+
+                try {
+                    uploadedImages = JSON.parse(productToEdit.image);
+                    if (!Array.isArray(uploadedImages)) uploadedImages = productToEdit.image ? [productToEdit.image] : [];
+                } catch(e) { uploadedImages = productToEdit.image ? [productToEdit.image] : []; }
+                renderImagePreviews();
+
+                if (productToEdit.attributes) {
+                    Object.keys(productToEdit.attributes).forEach(key => {
+                        if (key === 'colors' || key === 'sizes') addAttributeBlock(key, productToEdit.attributes[key]);
+                        else addAttributeBlock('custom', productToEdit.attributes[key], key);
+                    });
+                }
+            } else {
+                editingProductId = null;
+                title.innerText = "محصول جدید";
+                saveBtnText.innerText = "ذخیره";
+                document.getElementById('product-form').reset();
+                uploadedImages = [];
+                renderImagePreviews();
+            }
+        };
+
+        window.closeProductModal = () => document.getElementById('product-modal').classList.add('hidden');
+
+        window.saveProduct = async () => {
+            const btn = document.getElementById('btn-save-product');
+            const name = document.getElementById('prod-name').value;
+            const price = document.getElementById('prod-price').value;
+            const shipping = document.getElementById('prod-shipping').value;
+            const desc = document.getElementById('prod-desc').value;
+
+            if(!name || !price) { alert("نام و قیمت الزامی است"); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> پردازش...';
+
+            const attributes = {};
+            document.querySelectorAll('.attr-block').forEach(block => {
+                const type = block.dataset.type;
+                if (type === 'custom') {
+                    const label = block.querySelector('.custom-label').value.trim();
+                    const valStr = block.querySelector('.custom-values').value.trim();
+                    if (label && valStr) attributes[label] = valStr.split(/[,،]/).map(s => s.trim()).filter(s => s);
+                } else {
+                    const selected = [];
+                    block.querySelectorAll('.selected').forEach(el => selected.push(el.dataset.val));
+                    if (selected.length > 0) attributes[type] = selected;
+                }
+            });
+
+            const imagesJson = JSON.stringify(uploadedImages);
+
+            try {
+                const payload = {
+                    user_id: currentUser.id, name, price, category: 'general',
+                    shipping_cost: shipping, description: desc, 
+                    image: imagesJson, attributes
+                };
+
+                if (editingProductId) {
+                    delete payload.user_id;
+                    const { error } = await supabase.from('store_products').update(payload).eq('id', editingProductId);
+                    if(error) throw error;
+                } else {
+                    const { data, error } = await supabase.from('store_products').insert([payload]).select();
+                    if(error) throw error;
+                    showLink(data[0].id);
+                }
+                closeProductModal();
+                loadStoreProducts(); 
+            } catch (err) { alert(err.message); } finally { btn.disabled = false; }
+        };
+
+        // SQUARE CARD RENDERER - REDESIGNED FOR "SALE" LOOK & FEEL
+        async function loadStoreProducts() {
+            const grid = document.getElementById('products-grid');
+            const { data: products } = await supabase.from('store_products').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+            
+            grid.innerHTML = '';
+            document.getElementById('store-stats-products').innerText = products.length;
+
+            if (products.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400 border-2 border-dashed border-gray-300 dark:border-white/10 rounded-2xl">محصولی یافت نشد</div>`;
+                return;
+            }
+
+            products.forEach(p => {
+                let firstImg = 'img/logo01.png';
+                try {
+                    const imgs = JSON.parse(p.image);
+                    if(Array.isArray(imgs) && imgs.length > 0) firstImg = imgs[0];
+                    else if(typeof p.image === 'string' && p.image.startsWith('data:')) firstImg = p.image;
+                } catch(e) { if(p.image && p.image.startsWith('data:')) firstImg = p.image; }
+
+                // Dynamic Attributes Badges (Chips style like Sale page)
+                let attrsHtml = '';
+                if(p.attributes) {
+                    Object.keys(p.attributes).forEach(key => {
+                        let label = key === 'colors' ? 'رنگ' : (key === 'sizes' ? 'سایز' : key);
+                        let valCount = p.attributes[key].length;
+                        // Chip Style
+                        attrsHtml += `
+                            <span class="flex-shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-bold bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/5">
+                                ${label}: ${valCount}
+                            </span>
+                        `;
+                    });
+                } else {
+                    attrsHtml = '<span class="text-[9px] text-gray-400 font-bold px-1">بدون ویژگی</span>';
+                }
+
+                // New Card Design: Vertical, Square Image, Sale-like typography
+                const card = document.createElement('div');
+                card.className = 'group relative bg-white dark:bg-[#151515] rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col';
+                card.innerHTML = `
+                    <div class="relative w-full aspect-square bg-gray-50 dark:bg-white/5 overflow-hidden">
+                        <img src="${firstImg}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    
+                    <div class="p-3 lg:p-4 flex flex-col flex-1 gap-2">
+                        
+                        <h4 class="font-black text-xs lg:text-sm text-gray-800 dark:text-gray-100 line-clamp-2 min-h-[2.5em] leading-relaxed" title="${p.name}">
+                            ${p.name}
+                        </h4>
+
+                        <div class="flex items-baseline gap-1 mt-1 border-b border-dashed border-gray-100 dark:border-white/5 pb-2">
+                            <span class="text-brand-gold font-black text-base lg:text-lg">${new Intl.NumberFormat('fa-IR').format(p.price)}</span>
+                            <span class="text-[9px] text-gray-400 font-bold">تومان</span>
+                        </div>
+
+                        <div class="flex gap-1 overflow-x-auto no-scrollbar py-1 w-full mask-linear-fade">
+                            ${attrsHtml}
+                        </div>
+
+                        <div class="flex-1"></div>
+
+                        <div class="grid grid-cols-5 gap-2 mt-3 pt-2">
+                            <button class="edit-btn col-span-2 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-xl py-2.5 text-xs font-bold hover:bg-gray-200 dark:hover:bg-white/20 transition flex items-center justify-center">
+                                <i class="fas fa-pen ml-1"></i> ویرایش
+                            </button>
+                            <button class="link-btn col-span-3 bg-brand-gold text-black rounded-xl py-2.5 text-xs font-black hover:bg-brand-goldHover shadow-gold/50 transition flex items-center justify-center gap-1">
+                                مشاهده لینک <i class="fas fa-arrow-left text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                card.querySelector('.edit-btn').onclick = () => openProductModal(p);
+                card.querySelector('.link-btn').onclick = () => showLink(p.id);
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadStoreOrders() {
+            const { data: orders } = await supabase.from('store_orders').select('*').eq('seller_id', currentUser.id).order('created_at', { ascending: false });
+            const tbody = document.getElementById('orders-table-body');
+            tbody.innerHTML = '';
+            if(orders && orders.length > 0) {
+                let total = 0;
+                orders.forEach(o => {
+                    total += Number(o.total_price);
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition border-b border-gray-100 dark:border-white/5 last:border-0 text-xs lg:text-sm">
+                            <td class="p-4 font-mono text-gray-500 whitespace-nowrap">#${o.id}</td>
+                            <td class="p-4 font-bold text-gray-800 dark:text-white whitespace-nowrap">کد ${o.product_id}</td>
+                            <td class="p-4 whitespace-nowrap"><div class="font-bold">${o.customer_name}</div><div class="text-[10px] opacity-70 font-mono">${o.customer_phone}</div></td>
+                            <td class="p-4 text-brand-gold font-mono whitespace-nowrap">${new Intl.NumberFormat('fa-IR').format(o.total_price)}</td>
+                            <td class="p-4 whitespace-nowrap"><span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded text-[10px] lg:text-xs font-bold">پرداخت شده</span></td>
+                        </tr>`;
+                });
+                document.getElementById('store-stats-revenue').innerText = new Intl.NumberFormat('fa-IR').format(total);
+                document.getElementById('store-stats-orders').innerText = orders.length;
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">سفارشی یافت نشد</td></tr>`;
+            }
+        }
+
+        window.showLink = (id) => {
+            const modal = document.getElementById('link-modal');
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const finalLink = `${baseUrl}/sale.html?id=${id}`;
+            document.getElementById('generated-link').value = finalLink;
+            document.getElementById('preview-btn').href = finalLink;
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), { text: finalLink, width: 128, height: 128 });
+            modal.classList.remove('hidden');
+        };
+
+        window.copyLink = () => {
+            document.getElementById("generated-link").select();
+            document.execCommand("copy");
+            alert("لینک کپی شد!");
+        }
+
+        window.switchTab = (tabName) => {
+            // Sidebar buttons
+            document.querySelectorAll('.sidebar-link').forEach(btn => btn.classList.remove('active'));
+            // Bottom nav buttons
+            document.querySelectorAll('.bottom-nav-link').forEach(btn => btn.classList.remove('active'));
+
+            const sidebarButtons = document.querySelectorAll('.sidebar-link');
+            const bottomButtons = document.querySelectorAll('.bottom-nav-link');
+            
+            // Map tab names to indices based on their order in HTML
+            const map = { 'dashboard':0, 'store':1, 'invoices':2, 'support':3 };
+            
+            if(sidebarButtons[map[tabName]]) sidebarButtons[map[tabName]].classList.add('active');
+            
+            // For bottom nav
+            const bottomBtnsArray = Array.from(bottomButtons);
+            if(bottomBtnsArray[map[tabName]]) bottomBtnsArray[map[tabName]].classList.add('active');
+
+            ['view-dashboard', 'view-store', 'view-invoices', 'view-support'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.add('hidden'); el.classList.remove('animate-fade-in'); }
+            });
+            const selected = document.getElementById(`view-${tabName}`);
+            if(selected) { selected.classList.remove('hidden'); setTimeout(() => selected.classList.add('animate-fade-in'), 10); }
+        };
+
+        window.logout = async () => { if(confirm("خروج؟")) { await supabase.auth.signOut(); window.location.href = 'index.html'; } };
+    </script>
+</body>
+</html>
