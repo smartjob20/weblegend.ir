@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نتیجه پرداخت | WebLegend</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#D4AF37',
+                            black: '#0a0a0a',
+                            dark: '#111111',
+                            success: '#10B981',
+                            error: '#EF4444'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-in': 'bounceIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) both',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards'
+                    },
+                    keyframes: {
+                        bounceIn: {
+                            '0%': { opacity: '0', transform: 'scale3d(0.3, 0.3, 0.3)' },
+                            '20%': { transform: 'scale3d(1.1, 1.1, 1.1)' },
+                            '40%': { transform: 'scale3d(0.9, 0.9, 0.9)' },
+                            '60%': { opacity: '1', transform: 'scale3d(1.03, 1.03, 1.03)' },
+                            '80%': { transform: 'scale3d(0.97, 0.97, 0.97)' },
+                            'to': { opacity: '1', transform: 'scale3d(1, 1, 1)' }
+                        },
+                        fadeIn: {
+                            'from': { opacity: '0' },
+                            'to': { opacity: '1' }
+                        },
+                        slideUp: {
+                            'from': { opacity: '0', transform: 'translateY(20px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #050505; color: white; overflow-x: hidden; }
+        .glass-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .status-icon-wrapper {
+            background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+        
+        /* استایل مخصوص انیمیشن تمام صفحه */
+        #animation-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: #050505;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 bg-[url('img/bg-pattern.png')] bg-repeat">
+
+    <div id="animation-overlay" class="hidden">
+        <div class="text-center mb-8 animate-slide-up">
+            <h2 class="text-3xl font-black text-brand-gold tracking-widest mb-2">WEBLEGEND</h2>
+            <p class="text-gray-400 text-sm">در حال آماده‌سازی سفارش شما...</p>
+        </div>
+        <dotlottie-player 
+            src="https://lottie.host/88df0e7b-8c88-466d-9c42-261545d16671/2Q0k8k8Q8k.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 300px; height: 300px;" 
+            loop autoplay>
+        </dotlottie-player>
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        
+        <div id="loading-state" class="glass-card rounded-3xl p-10 text-center animate-fade-in">
+            <div class="w-20 h-20 mx-auto mb-6 relative flex items-center justify-center">
+                <div class="absolute inset-0 rounded-full border-4 border-brand-gold/20 animate-pulse"></div>
+                <div class="absolute inset-0 rounded-full border-t-4 border-brand-gold animate-spin"></div>
+                <i class="fas fa-shield-alt text-2xl text-brand-gold"></i>
+            </div>
+            <h2 class="text-xl font-bold mb-2">در حال تایید نهایی...</h2>
+            <p class="text-gray-400 text-sm">لطفاً صفحه را نبندید.</p>
+        </div>
+
+        <div id="success-state" class="glass-card rounded-3xl p-8 text-center hidden border-t-4 border-t-brand-success">
+            <div class="status-icon-wrapper w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center relative">
+                <div class="absolute inset-0 bg-brand-success/20 rounded-full animate-ping opacity-75"></div>
+                <div class="w-16 h-16 bg-brand-success rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.5)] relative z-10">
+                    <i class="fas fa-check text-3xl text-white"></i>
+                </div>
+            </div>
+            
+            <h1 class="text-2xl font-black text-white mb-2">پرداخت موفق بود!</h1>
+            <p class="text-gray-400 text-sm mb-8">سفارش شما در سیستم ثبت و به واحد ارسال تحویل داده شد.</p>
+            
+            <div class="bg-white/5 rounded-2xl p-5 space-y-4 mb-8 border border-white/5 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">کد رهگیری:</span>
+                    <span id="ref-number" class="font-mono font-bold text-brand-gold text-lg tracking-widest">---</span>
+                </div>
+                <div class="w-full h-px bg-white/5"></div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500">مبلغ پرداختی:</span>
+                    <span id="paid-amount" class="font-bold text-white">---</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="window.location.href='dashboard.html'" class="w-full bg-brand-gold hover:bg-yellow-500 text-black font-bold py-4 rounded-xl transition-all shadow-[0_4px_20px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_25px_rgba(212,175,55,0.4)] hover:-translate-y-1">
+                    <i class="fas fa-box-open ml-2"></i> مشاهده سفارش در داشبورد
+                </button>
+                <button onclick="window.location.href='index.html'" class="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl transition-all border border-white/10">
+                    بازگشت به صفحه اصلی
+                </button>
+            </div>
+        </div>
+
+        <div id="error-state" class="glass-card rounded-3xl p-8 text-center hidden border-t-4 border-t-brand-error">
+            <div class="status-icon-wrapper w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center">
+                <div class="w-16 h-16 bg-brand-error rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+                    <i class="fas fa-times text-3xl text-white"></i>
+                </div>
+            </div>
+            
+            <h1 class="text-2xl font-black text-white mb-2">پرداخت ناموفق</h1>
+            <p class="text-gray-400 text-sm mb-6">متاسفانه عملیات پرداخت تکمیل نشد.</p>
+            
+            <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-xs mb-8 leading-relaxed" id="error-msg">
+                علت خطا: نامشخص
+            </div>
+
+            <button onclick="retryPayment()" class="w-full bg-white text-black font-bold py-4 rounded-xl transition-all hover:bg-gray-200 mb-3">
+                <i class="fas fa-redo ml-2"></i> تلاش مجدد
+            </button>
+            <button onclick="window.location.href='index.html'" class="w-full text-gray-500 hover:text-white py-2 text-sm transition-colors">
+                انصراف و بازگشت
+            </button>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        // --- CONFIGURATION ---
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // --- MAIN LOGIC ---
+        async function verifyTransaction() {
+            const params = new URLSearchParams(window.location.search);
+            const trackId = params.get('trackId');
+            const success = params.get('success'); // 1 or 0
+            const status = params.get('status');   // Zibal status code
+            const orderId = params.get('order_id');
+
+            // 1. بررسی اولیه سمت کلاینت (Quick Fail)
+            if (success !== '1') {
+                showError(translateZibalError(status));
+                return;
+            }
+
+            if (!trackId) {
+                showError("کد رهگیری یافت نشد. لینک بازگشت نامعتبر است.");
+                return;
+            }
+
+            try {
+                // 2. فراخوانی تابع امنیتی سمت سرور (Edge Function)
+                // این تابع با بانک تماس می‌گیرد و دیتابیس را آپدیت می‌کند
+                const { data, error } = await supabase.functions.invoke('verify-payment', {
+                    body: { 
+                        track_id: trackId, 
+                        order_id: orderId 
+                    }
+                });
+
+                if (error) throw error;
+
+                if (data && data.success) {
+                    // بجای نمایش فوری موفقیت، انیمیشن جذاب را اجرا می‌کنیم
+                    playSuccessAnimation(data.refNumber, data.amount);
+                } else {
+                    throw new Error(data.message || 'تایید نهایی پرداخت توسط سرور انجام نشد.');
+                }
+
+            } catch (err) {
+                console.error("Verification Error:", err);
+                showError(err.message || "خطا در ارتباط با سرور. اگر وجه کسر شده، طی ۷۲ ساعت عودت داده می‌شود.");
+            }
+        }
+
+        // --- THE MAGIC SHOW (ANIMATION) ---
+        function playSuccessAnimation(refNum, amount) {
+            // مخفی کردن لودینگ
+            document.getElementById('loading-state').classList.add('hidden');
+            
+            // نمایش لایه انیمیشن (کامیون)
+            const overlay = document.getElementById('animation-overlay');
+            overlay.classList.remove('hidden');
+
+            // آماده‌سازی داده‌ها در پشت صحنه
+            document.getElementById('ref-number').innerText = refNum || '---';
+            if(amount) {
+                document.getElementById('paid-amount').innerText = new Intl.NumberFormat('fa-IR').format(amount) + ' ریال';
+            }
+
+            // صبر می‌کنیم تا انیمیشن اجرا شود (مثلاً ۳.۵ ثانیه)
+            // کامیون حرکت می‌کند و می‌رود...
+            setTimeout(() => {
+                // فید کردن انیمیشن
+                overlay.style.opacity = '0';
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden'); // حذف کامل لایه انیمیشن
+                    showFinalReceipt(); // نمایش فاکتور نهایی
+                }, 500); // نیم ثانیه زمان برای فید شدن
+
+            }, 3500); 
+        }
+
+        function showFinalReceipt() {
+            const el = document.getElementById('success-state');
+            el.classList.remove('hidden');
+            el.classList.add('animate-bounce-in');
+            
+            // جشن و کاغذ رنگی 🎉
+            fireConfetti();
+        }
+
+        // --- ERROR HANDLING ---
+        function showError(msg) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('animation-overlay').classList.add('hidden'); // اطمینان از مخفی بودن انیمیشن
+            const el = document.getElementById('error-state');
+            el.classList.remove('hidden');
+            el.classList.add('animate-fade-in');
+            
+            document.getElementById('error-msg').innerText = msg;
+        }
+
+        window.retryPayment = () => {
+            history.back();
+        };
+
+        function translateZibalError(status) {
+            const codes = {
+                '-1': 'در انتظار تایید',
+                '-2': 'خطای داخلی بانک',
+                '1': 'پرداخت شده - تایید شده',
+                '2': 'پرداخت شده - تایید نشده',
+                '3': 'لغو شده توسط کاربر',
+                '4': 'شماره کارت نامعتبر است',
+                '5': 'موجودی کافی نیست',
+                '6': 'رمز دوم اشتباه است',
+                '100': 'پرداخت با موفقیت انجام شد',
+                '102': 'merchant یافت نشد',
+                '201': 'قبلا تایید شده',
+                '202': 'سفارش پرداخت نشده یا ناموفق بوده است'
+            };
+            return codes[status] || `خطای بانکی (کد: ${status})`;
+        }
+
+        function fireConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            var random = function(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // Start Verification
+        verifyTransaction();
+    </script>
+</body>
+</html>
