@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>نتیجه تراکنش | WebLegend</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        brand: { 
+                            gold: '#D4AF37', 
+                            primary: '#000000'
+                        } 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 font-[Vazirmatn]">
+
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden relative">
+        <div class="bg-brand-gold h-2"></div>
+        
+        <div class="p-8 text-center">
+            
+            <div id="loading" class="flex flex-col items-center justify-center py-10">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-gold mb-4"></div>
+                <p class="text-gray-600 dark:text-gray-300 animate-pulse">در حال تایید نهایی پرداخت...</p>
+                <p class="text-xs text-gray-400 mt-2">لطفاً صفحه را نبندید</p>
+            </div>
+
+            <div id="content" class="hidden">
+                <div id="status-icon" class="mb-4 flex justify-center"></div>
+                <h2 id="status-text" class="text-2xl font-bold mb-2 text-gray-800 dark:text-white"></h2>
+                <p id="ref-code" class="text-sm text-gray-500 dark:text-gray-400 mb-8 bg-gray-50 dark:bg-white/5 py-3 rounded-lg select-all"></p>
+                
+                <a id="btn-return" href="dashboard.html" class="hidden inline-flex items-center justify-center w-full py-3 bg-gray-800 hover:bg-black text-white rounded-xl transition shadow-lg transform active:scale-95">
+                    بازگشت به پنل کاربری
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 🔴 تنظیمات حیاتی سوپربیس (اینجا را با دقت پر کنید)
+        // ============================================================
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co'; // <--- آدرس پروژه
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY'; // <--- کلید Anon (عمومی)
+        
+        // ایجاد کلاینت با نام متفاوت برای جلوگیری از تداخل با متغیر گلوبال
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function verifyTransaction() {
+            const statusEl = document.getElementById('status-text');
+            const iconEl = document.getElementById('status-icon');
+            const refEl = document.getElementById('ref-code');
+            const loadingEl = document.getElementById('loading');
+            const contentEl = document.getElementById('content');
+            const btnReturn = document.getElementById('btn-return');
+
+            // 1. خواندن پارامترهای ارسالی از سمت بانک و sale.html
+            const urlParams = new URLSearchParams(window.location.search);
+            const trackId = urlParams.get('trackId'); // کد رهگیری زیبال
+            const success = urlParams.get('success'); // 1 = موفق
+            const status = urlParams.get('status');   // کد وضعیت دقیق
+            
+            // پارامترهایی که خودمان اضافه کردیم:
+            const orderId = urlParams.get('orderId'); 
+            const type = urlParams.get('type') || 'order'; // پیش‌فرض روی خرید محصول
+
+            console.log("Verify Params:", { trackId, success, status, orderId, type });
+
+            // 2. بررسی اولیه: اگر بانک گفت ناموفق است، اصلاً سمت سرور نرو
+            if (success !== '1') {
+                showError('پرداخت ناموفق بود', `کد خطا: ${status || 'ناشناخته'}`);
+                return;
+            }
+
+            try {
+                // 3. فراخوانی Edge Function برای تایید نهایی و ثبت در دیتابیس
+                // این تابع موجودی انبار را کم می‌کند و وضعیت سفارش را 'paid' می‌کند
+                const { data, error } = await supabaseClient.functions.invoke('verify-payment', {
+                    body: { 
+                        trackId: trackId,
+                        orderId: orderId, // برای آپدیت سفارش یا اشتراک
+                        type: type        // 'order' یا 'subscription'
+                    }
+                });
+
+                if (error) throw error;
+
+                if (data && data.success) {
+                    // ========================
+                    // ✅ پرداخت موفق و تایید شده
+                    // ========================
+                    loadingEl.classList.add('hidden');
+                    contentEl.classList.remove('hidden');
+                    
+                    statusEl.textContent = 'پرداخت با موفقیت انجام شد';
+                    statusEl.className = 'text-xl font-bold text-green-600 mt-4';
+                    iconEl.innerHTML = '<i class="fas fa-check-circle text-7xl text-green-500 animate-bounce drop-shadow-lg"></i>';
+                    
+                    if (data.refNumber) {
+                        refEl.innerHTML = `کد پیگیری: <span class="font-mono font-bold text-lg text-black dark:text-white">${data.refNumber}</span>`;
+                    }
+
+                    fireConfetti(); // جشن!
+
+                    // تنظیم دکمه بازگشت هوشمند
+                    btnReturn.classList.remove('hidden');
+                    
+                    if (type === 'subscription') {
+                        btnReturn.href = 'dashboard.html?tab=profile';
+                        btnReturn.textContent = 'مشاهده اشتراک ویژه';
+                    } else {
+                        // برای خرید محصول
+                        btnReturn.href = 'customer.html';
+                        btnReturn.innerHTML = '<i class="fas fa-box-open mr-2"></i> پیگیری سفارش';
+                    }
+
+                    // هدایت خودکار بعد از ۵ ثانیه
+                    setTimeout(() => {
+                        window.location.href = btnReturn.href;
+                    }, 5000);
+
+                } else {
+                    // بانک تایید کرد ولی سرور ما (Edge Function) رد کرد (مثلاً تکراری بودن)
+                    throw new Error(data.message || 'تایید تراکنش توسط سرور انجام نشد');
+                }
+
+            } catch (err) {
+                console.error("Verification Error:", err);
+                showError('خطا در تایید نهایی', err.message || 'ارتباط با سرور برقرار نشد');
+            }
+        }
+
+        function showError(title, detail) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+            
+            const statusEl = document.getElementById('status-text');
+            const refEl = document.getElementById('ref-code');
+            const iconEl = document.getElementById('status-icon');
+            const btn = document.getElementById('btn-return');
+            
+            statusEl.textContent = title;
+            statusEl.className = 'text-xl font-bold text-red-600 mt-4';
+            
+            refEl.className = "text-sm text-red-500 mt-2 bg-red-50 dark:bg-red-900/20 py-2 px-4 rounded-lg";
+            refEl.textContent = detail;
+            
+            iconEl.innerHTML = '<i class="fas fa-times-circle text-7xl text-red-500 animate-pulse drop-shadow-lg"></i>';
+            
+            btn.classList.remove('hidden');
+            btn.href = "dashboard.html"; // در صورت خطا برگردد به داشبورد
+            btn.innerHTML = '<i class="fas fa-redo mr-2"></i> بازگشت و تلاش مجدد';
+        }
+
+        // انیمیشن کاغذ رنگی
+        function fireConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            var random = function(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        // شروع خودکار
+        verifyTransaction();
+    </script>
+</body>
+</html>
