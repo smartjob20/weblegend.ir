@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>پنل کاربری مشتری | WebLegend Club</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        brand: { 
+                            gold: '#D4AF37', 
+                            goldHover: '#F9E59E', 
+                            dark: '#050505', 
+                            panel: '#0F1115',
+                            accent: '#10B981'
+                        } 
+                    },
+                    fontFamily: { sans: ['Vazirmatn', 'sans-serif'] },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #f3f4f6; color: #1f2937; 
+            transition: all 0.3s ease; -webkit-tap-highlight-color: transparent;
+        }
+        .dark body { background-color: #000000; color: #f3f4f6; }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+            border-radius: 24px;
+        }
+        .dark .glass-card {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Tabs */
+        .nav-pill {
+            padding: 10px 20px; border-radius: 14px; font-size: 12px; font-weight: 800;
+            color: #6b7280; transition: all 0.3s; cursor: pointer; flex: 1; text-align: center;
+            border: 2px solid transparent;
+        }
+        .nav-pill.active {
+            background: white; color: var(--brand-gold, #D4AF37);
+            border-color: #f3f4f6; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .dark .nav-pill.active {
+            background: #1a1a1a; color: #F9E59E; border-color: #333;
+        }
+
+        /* Order Card */
+        .order-card {
+            position: relative; overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .order-card:active { transform: scale(0.98); }
+        
+        .status-badge {
+            font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px;
+            display: flex; align-items: center; gap: 4px; width: fit-content;
+        }
+        .status-pending { background: #fef9c3; color: #854d0e; }
+        .status-paid { background: #dcfce7; color: #166534; }
+        .status-sent { background: #dbeafe; color: #1e40af; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        
+        .dark .status-pending { background: rgba(254, 249, 195, 0.1); color: #fef08a; }
+        .dark .status-paid { background: rgba(220, 252, 231, 0.1); color: #86efac; }
+        .dark .status-sent { background: rgba(219, 234, 254, 0.1); color: #93c5fd; }
+        .dark .status-cancelled { background: rgba(254, 226, 226, 0.1); color: #fca5a5; }
+
+        /* Loyalty Card */
+        .loyalty-card {
+            background: linear-gradient(135deg, #000, #1a1a1a);
+            border-radius: 24px; padding: 24px; color: #D4AF37;
+            position: relative; overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.6);
+        }
+        .loyalty-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+            animation: float 6s infinite ease-in-out; pointer-events: none;
+        }
+
+        /* Login Input */
+        .login-input {
+            width: 100%; padding: 16px; border-radius: 16px;
+            background: #f9fafb; border: 2px solid #e5e7eb;
+            font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 2px;
+            transition: 0.3s; outline: none; font-family: monospace;
+        }
+        .login-input:focus { border-color: #D4AF37; background: #fff; }
+        .dark .login-input { background: #1a1a1a; border-color: #333; color: white; }
+        .dark .login-input:focus { border-color: #D4AF37; }
+
+        .price-font { font-family: 'Vazirmatn'; font-feature-settings: "ss01"; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+
+    <div id="login-screen" class="w-full max-w-md p-6 flex flex-col items-center justify-center min-h-screen transition-all duration-500">
+        <div class="mb-8 relative">
+            <div class="w-24 h-24 rounded-full border-2 border-brand-gold p-1 animate-pulse-slow">
+                <img id="login-logo" src="img/logo01.png" class="w-full h-full object-cover rounded-full bg-gray-100">
+            </div>
+            <div class="absolute -bottom-2 -right-2 bg-brand-gold text-black text-[10px] font-black px-2 py-1 rounded-lg">CLUB</div>
+        </div>
+        
+        <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-2" id="login-store-name">فروشگاه آنلاین</h1>
+        <p class="text-xs text-gray-500 mb-8 text-center leading-relaxed">برای ورود به پنل کاربری و مشاهده سفارشات،<br>شماره موبایل خود را وارد کنید.</p>
+
+        <div class="w-full space-y-4">
+            <input type="tel" id="phone-input" class="login-input" placeholder="09xxxxxxxxx" maxlength="11">
+            <button onclick="attemptLogin()" class="w-full bg-brand-gold hover:bg-brand-goldHover text-black font-black py-4 rounded-xl shadow-lg shadow-brand-gold/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                <span>ورود به باشگاه مشتریان</span>
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        <p class="mt-8 text-[10px] text-gray-400">قدرت گرفته از <span class="font-bold text-brand-gold">WEBLEGEND</span></p>
+    </div>
+
+    <div id="dashboard-screen" class="w-full max-w-md h-screen flex flex-col hidden opacity-0 transition-opacity duration-500">
+        
+        <header class="p-6 pb-2 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-black text-gray-900 dark:text-white" id="user-greeting">سلام، کاربر</h2>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">به پنل اختصاصی خود خوش آمدید</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden border border-white dark:border-white/20 cursor-pointer" onclick="logout()">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover opacity-80">
+            </div>
+        </header>
+
+        <div class="px-6 py-4">
+            <div class="loyalty-card animate-slide-up">
+                <div class="flex justify-between items-start mb-6 relative z-10">
+                    <div>
+                        <p class="text-[10px] text-brand-gold/70 uppercase tracking-widest font-bold mb-1">سطح وفاداری</p>
+                        <h3 class="text-2xl font-black text-white flex items-center gap-2">
+                            <i class="fas fa-crown"></i> <span id="loyalty-level">MEMBER</span>
+                        </h3>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-brand-gold/70 font-bold mb-1">مجموع خرید</p>
+                        <p class="text-lg font-mono font-bold text-white price-font" id="total-spent">0</p>
+                    </div>
+                </div>
+                <div class="relative z-10">
+                    <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden">
+                        <div class="bg-brand-gold h-full w-[0%]" id="progress-bar" style="transition: width 1s ease;"></div>
+                    </div>
+                    <p class="text-[9px] text-right mt-2 text-brand-gold/60" id="next-level-text">شروع مسیر افسانه‌ای</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 mb-2">
+            <div class="bg-gray-200 dark:bg-white/5 p-1 rounded-2xl flex">
+                <div class="nav-pill active" onclick="switchTab('orders')">سفارشات</div>
+                <div class="nav-pill" onclick="switchTab('downloads')"><i class="fas fa-cloud-download-alt"></i> دانلودها</div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 py-2 pb-24 custom-scrollbar space-y-4" id="content-area">
+            
+            <div id="tab-orders" class="space-y-3 animate-slide-up">
+                <div class="text-center py-10 opacity-50">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                </div>
+            </div>
+
+            <div id="tab-downloads" class="space-y-3 hidden animate-slide-up">
+            </div>
+
+        </div>
+
+        <div class="fixed bottom-0 left-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md border-t border-gray-100 dark:border-white/5 p-4 flex justify-center text-[10px] text-gray-400 font-bold">
+            <span id="store-footer-name">فروشگاه شما</span>&nbsp;|&nbsp;<span>پشتیبانی: <span id="support-phone" class="font-mono">---</span></span>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        // تنظیمات دیتابیس
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        let sellerId = null;
+        let customerPhone = localStorage.getItem('customer_phone');
+        let storeProfile = null;
+
+        // --- UTILS ---
+        const formatMoney = (n) => new Intl.NumberFormat('fa-IR').format(n);
+        
+        function showToast(msg, type='success') {
+            Toastify({ text: msg, duration: 3000, gravity: "top", position: "center", style: { background: type === 'success' ? "#10B981" : "#EF4444", borderRadius: "12px", fontSize: "12px", fontFamily: "Vazirmatn" } }).showToast();
+        }
+        
+        window.copyText = (text) => { navigator.clipboard.writeText(text); showToast('کپی شد'); };
+        
+        function safeParse(data) {
+            if (!data) return [];
+            if (typeof data === 'object') return data;
+            try { return JSON.parse(data); } catch { return []; }
+        }
+
+        // --- FIX: Normalize Persian/Arabic Numbers ---
+        function normalizePhone(phone) {
+            if (!phone) return '';
+            return phone.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                        .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                        .trim();
+        }
+
+        // --- INIT ---
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            sellerId = urlParams.get('id');
+
+            if (!sellerId) {
+                document.body.innerHTML = '<div class="text-center p-10 text-gray-500 font-bold">لینک نامعتبر است (شناسه فروشگاه یافت نشد)</div>';
+                return;
+            }
+
+            const { data: profile } = await supabase.from('store_profiles').select('*').eq('user_id', sellerId).single();
+            if (profile) {
+                storeProfile = profile;
+                applyBranding(profile);
+            }
+
+            if (customerPhone) {
+                verifyLogin(customerPhone);
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        }
+
+        function applyBranding(profile) {
+            if(profile.shop_name) {
+                document.getElementById('login-store-name').innerText = profile.shop_name;
+                document.getElementById('store-footer-name').innerText = profile.shop_name;
+                document.title = `پنل مشتریان | ${profile.shop_name}`;
+            }
+            if(profile.avatar_url) document.getElementById('login-logo').src = profile.avatar_url;
+            if(profile.brand_color) document.documentElement.style.setProperty('--brand-gold', profile.brand_color);
+            if(profile.instagram_id) document.getElementById('support-phone').innerText = profile.instagram_id;
+        }
+
+        // --- AUTH LOGIC ---
+        window.attemptLogin = () => {
+            const rawPhone = document.getElementById('phone-input').value;
+            const phone = normalizePhone(rawPhone);
+
+            if (phone.length < 10) { showToast('شماره موبایل معتبر نیست', 'error'); return; }
+            verifyLogin(phone);
+        };
+
+        async function verifyLogin(phone) {
+            const btn = document.querySelector('#login-screen button');
+            if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال بررسی...';
+
+            // اصلاحیه مهم: تغییر tracking_code به shipping_code برای حل ارور ۴۰۰
+            const { data, error } = await supabase
+                .from('store_orders')
+                .select('id, created_at, total_amount, status, items, shipping_code, payment_ref, customer_name')
+                .eq('seller_id', sellerId)
+                .eq('customer_phone', phone) 
+                .order('created_at', { ascending: false });
+
+            if (error || !data || data.length === 0) {
+                if(error) console.error("Login Error:", error);
+                showToast('سفارشی با این شماره در این فروشگاه یافت نشد', 'error');
+                if(btn) btn.innerHTML = '<span>ورود به باشگاه مشتریان</span><i class="fas fa-arrow-left"></i>';
+                localStorage.removeItem('customer_phone');
+            } else {
+                completeLogin(phone, data);
+            }
+        }
+
+        function completeLogin(phone, orders) {
+            customerPhone = phone;
+            localStorage.setItem('customer_phone', phone);
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            const dash = document.getElementById('dashboard-screen');
+            dash.classList.remove('hidden');
+            setTimeout(() => dash.classList.remove('opacity-0'), 50);
+
+            const totalSpent = orders
+                .filter(o => o.status === 'paid' || o.status === 'sent')
+                .reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+            
+            const lastOrder = orders[0];
+            const userName = lastOrder.customer_name || 'دوست من';
+
+            document.getElementById('user-greeting').innerText = `سلام، ${userName}`;
+            document.getElementById('total-spent').innerText = formatMoney(totalSpent);
+            
+            calculateLoyalty(totalSpent);
+            renderOrders(orders);
+            renderDownloads(orders);
+        }
+
+        function calculateLoyalty(spent) {
+            let level = 'BRONZE'; 
+            let percent = 10;
+            let next = 'رسیدن به سطح نقره‌ای';
+            
+            if(spent > 1000000) { level = 'SILVER'; percent = 40; next = 'رسیدن به سطح طلایی'; }
+            if(spent > 5000000) { level = 'GOLD'; percent = 75; next = 'رسیدن به سطح لجند'; }
+            if(spent > 20000000) { level = 'LEGEND'; percent = 100; next = 'شما پادشاه هستید!'; }
+            
+            document.getElementById('loyalty-level').innerText = level;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('next-level-text').innerText = next;
+        }
+
+        window.logout = () => {
+            if(confirm('خروج از حساب کاربری؟')) {
+                localStorage.removeItem('customer_phone');
+                location.reload();
+            }
+        }
+
+        // --- RENDER LOGIC ---
+        function renderOrders(orders) {
+            const container = document.getElementById('tab-orders');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-gray-400">هیچ سفارشی یافت نشد</div>';
+                return;
+            }
+
+            orders.forEach(order => {
+                const items = safeParse(order.items);
+                let title = 'محصول نامشخص';
+                let img = 'img/logo01.png';
+                
+                if(items.length > 0) {
+                    title = items[0].title;
+                    if(items[0].image) img = items[0].image;
+                }
+
+                const statusConfig = {
+                    'pending': { label: 'در انتظار تایید', class: 'status-pending', icon: 'fa-clock' },
+                    'paid': { label: 'پرداخت شده', class: 'status-paid', icon: 'fa-check-circle' },
+                    'sent': { label: 'ارسال شده', class: 'status-sent', icon: 'fa-truck-fast' },
+                    'cancelled': { label: 'لغو شده', class: 'status-cancelled', icon: 'fa-times' }
+                };
+                const st = statusConfig[order.status] || statusConfig['pending'];
+
+                let trackingHTML = '';
+                // دریافت کد رهگیری از shipping_code (به جای tracking_code که وجود ندارد)
+                const trackCode = order.shipping_code || (order.status === 'sent' ? order.payment_ref : null);
+                
+                if (trackCode && (order.status === 'sent' || order.status === 'paid')) {
+                    trackingHTML = `
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-white/5 flex justify-between items-center bg-blue-50 dark:bg-blue-900/10 p-2 rounded-lg">
+                            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold">کد رهگیری:</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-sm tracking-widest text-blue-800 dark:text-blue-200">${trackCode}</span>
+                                <i class="fas fa-copy text-blue-400 cursor-pointer hover:text-blue-600" onclick="copyText('${trackCode}')"></i>
+                            </div>
+                        </div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="glass-card p-4 order-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex gap-3">
+                                <img src="${img}" class="w-12 h-12 rounded-xl object-cover bg-gray-100">
+                                <div>
+                                    <h4 class="font-bold text-xs text-gray-900 dark:text-white line-clamp-1">${title}</h4>
+                                    <span class="text-[10px] text-gray-400 font-mono">${new Date(order.created_at).toLocaleDateString('fa-IR')}</span>
+                                </div>
+                            </div>
+                            <div class="status-badge ${st.class}">
+                                <i class="fas ${st.icon}"></i> ${st.label}
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs text-gray-500">
+                            <span>مبلغ: <span class="font-bold text-gray-900 dark:text-white price-font">${formatMoney(order.total_amount)}</span> ت</span>
+                            <span>اقلام: ${items.length}</span>
+                        </div>
+                        ${trackingHTML}
+                    </div>
+                `;
+            });
+        }
+
+        function renderDownloads(orders) {
+            const container = document.getElementById('tab-downloads');
+            container.innerHTML = '';
+            
+            container.innerHTML = `
+                <div class="glass-card p-6 text-center">
+                    <i class="fas fa-lock text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-xs text-gray-500 font-bold">گاوصندوق دیجیتال</p>
+                    <p class="text-[10px] text-gray-400 mt-2">اگر محصول دانلودی یا لایسنس خریداری کنید،<br>لینک‌های شما اینجا به صورت امن نگهداری می‌شوند.</p>
+                </div>
+            `;
+        }
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.nav-pill').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('tab-orders').classList.add('hidden');
+            document.getElementById('tab-downloads').classList.add('hidden');
+            
+            const target = document.getElementById(`tab-${tab}`);
+            target.classList.remove('hidden');
+            target.classList.add('animate-slide-up');
+        }
+
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        init();
+    </script>
+</body>
+</html>
