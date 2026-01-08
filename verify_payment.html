@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>نتیجه تراکنش | Web Legend</title>
+    
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <style>
+        body { 
+            background-color: #f3f4f6; 
+            font-family: 'Vazirmatn', sans-serif; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0;
+            padding: 20px;
+        }
+
+        .receipt-card { 
+            width: 100%; 
+            max-width: 420px; 
+            background: #fff; 
+            border-radius: 24px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); 
+            overflow: hidden; 
+            position: relative; 
+            transition: all 0.3s ease;
+        }
+
+        /* Header Styles */
+        .status-header { 
+            padding: 45px 20px 70px; 
+            text-align: center; 
+            position: relative; 
+            color: white; 
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%); 
+        }
+        .status-header.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .status-header.error { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+        
+        .status-icon { 
+            width: 86px; 
+            height: 86px; 
+            background: rgba(255,255,255,0.25); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0 auto 15px; 
+            backdrop-filter: blur(8px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border: 3px solid rgba(255,255,255,0.5); 
+        }
+        .status-icon i { font-size: 42px; color: #fff; }
+
+        /* Body Styles */
+        .receipt-body { padding: 0 25px 30px; margin-top: -45px; position: relative; z-index: 10; }
+        
+        .info-box { 
+            background: #fff; 
+            border-radius: 20px; 
+            padding: 30px 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.06); 
+            text-align: center; 
+            border: 1px solid #f3f4f6; 
+        }
+
+        .amount-display { 
+            font-size: 32px; 
+            font-weight: 900; 
+            color: #1f2937; 
+            margin: 15px 0 25px; 
+            letter-spacing: -1px; 
+        }
+        
+        .details-list { text-align: right; margin-top: 20px; }
+        .detail-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            font-size: 14px; 
+            color: #6b7280; 
+            margin-bottom: 14px; 
+            padding-bottom: 14px; 
+            border-bottom: 1px dashed #e5e7eb; 
+        }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .detail-val { font-weight: 800; color: #111827; }
+
+        /* Buttons */
+        .actions-area { padding: 0 25px 30px; display: flex; flex-direction: column; gap: 12px; }
+        .action-btn { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            font-size: 15px;
+            border: none;
+            outline: none;
+        }
+        .btn-main { background: #1f2937; color: #fff; box-shadow: 0 8px 20px -6px rgba(31, 41, 55, 0.4); }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 25px -6px rgba(31, 41, 55, 0.5); }
+        .btn-sec { background: #f3f4f6; color: #4b5563; }
+        .btn-sec:hover { background: #e5e7eb; color: #111827; }
+
+        /* Loader */
+        .loader-container { text-align: center; padding: 40px; }
+        .loader { 
+            width: 50px; 
+            height: 50px; 
+            border: 4px solid #e5e7eb; 
+            border-top-color: #3b82f6; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+            margin: 0 auto 20px; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none !important; }
+        
+        /* Print/Capture Optimization */
+        @media print {
+            body { background: white; }
+            .receipt-card { box-shadow: none; border: 1px solid #eee; }
+            .actions-area { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader-view" class="receipt-card">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">در حال استعلام وضعیت...</h2>
+            <p class="text-sm text-gray-500">لطفاً صفحه را نبندید، در حال ارتباط با بانک هستیم.</p>
+        </div>
+    </div>
+
+    <div id="result-view" class="receipt-card hidden">
+        <div id="capture-area" style="background: white;">
+            <div id="status-header" class="status-header success">
+                <div class="status-icon">
+                    <i id="status-icon-i" class="fas fa-check"></i>
+                </div>
+                <h1 class="text-2xl font-black mb-1" id="status-title">پرداخت موفق</h1>
+                <p class="text-sm opacity-90 font-medium" id="status-desc">تراکنش با موفقیت ثبت شد</p>
+            </div>
+
+            <div class="receipt-body">
+                <div class="info-box">
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">مبلغ تراکنش</p>
+                    <div class="amount-display flex justify-center items-center gap-2 dir-ltr">
+                        <span id="amount-val">0</span>
+                        <span class="text-base font-bold text-gray-400">تومان</span>
+                    </div>
+                    
+                    <div class="details-list">
+                        <div class="detail-row">
+                            <span>شماره پیگیری (RefID)</span>
+                            <span class="detail-val font-mono tracking-wider text-lg text-blue-600" id="ref-id">---</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>کد رهگیری بانک</span>
+                            <span class="detail-val font-mono text-gray-600" id="track-id">---</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>تاریخ و زمان</span>
+                            <span class="detail-val" id="date-val">---</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>نوع تراکنش</span>
+                            <span class="detail-val" id="trans-type">---</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-area">
+            <button id="btn-main-action" class="action-btn btn-main hidden" onclick="handleMainAction()">
+                <span id="btn-main-text">بازگشت به داشبورد</span> 
+                <i class="fas fa-home"></i>
+            </button>
+            
+            <button id="btn-download" class="action-btn btn-sec hidden" onclick="downloadReceipt()">
+                <span>ذخیره رسید</span> 
+                <i class="fas fa-camera"></i>
+            </button>
+
+            <button id="btn-retry" class="action-btn btn-main hidden" onclick="window.location.reload()">
+                <span>تلاش مجدد</span> 
+                <i class="fas fa-redo"></i>
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        // تنظیمات سوپابیس (دقیقاً همان کلیدهای شما)
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // دریافت پارامترهای URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // تشخیص پارامترهای زرین‌پال یا سایر درگاه‌ها
+        const authority = urlParams.get('Authority') || urlParams.get('authority');
+        const status = urlParams.get('Status') || urlParams.get('status');
+        
+        // متغیر برای ذخیره نوع تراکنش جهت هدایت کاربر
+        let successfulTransactionType = null;
+
+        async function verifyPayment() {
+            // 1. بررسی وضعیت اولیه (Client Check)
+            if (status === 'NOK') {
+                renderError('پرداخت توسط شما لغو شد یا ناموفق بود.');
+                return;
+            }
+
+            if (!authority) {
+                renderError('کد پیگیری تراکنش (Authority) یافت نشد.');
+                return;
+            }
+
+            try {
+                // 2. درخواست تایید به Edge Function (Server Check)
+                console.log('Verifying Authority:', authority);
+                
+                const { data, error } = await supabase.functions.invoke('verify-payment', {
+                    body: { authority: authority, status: 'OK' }
+                });
+
+                if (error) throw error;
+
+                if (data && data.success) {
+                    // موفقیت
+                    renderSuccess(data);
+                } else {
+                    // شکست منطقی (مثلاً خطای بانک)
+                    renderError(data.message || 'تراکنش تایید نشد.', data.code);
+                }
+
+            } catch (err) {
+                console.error('System Error:', err);
+                renderError('خطا در برقراری ارتباط با سرور.');
+            }
+        }
+
+        function renderSuccess(data) {
+            // مخفی کردن لودر
+            document.getElementById('loader-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+
+            // تنظیم استایل موفق
+            const header = document.getElementById('status-header');
+            header.className = 'status-header success';
+            
+            document.getElementById('status-icon-i').className = 'fas fa-check';
+            document.getElementById('status-title').innerText = 'پرداخت موفق';
+            document.getElementById('status-desc').innerText = data.message;
+
+            // پر کردن داده‌ها
+            // نکته: ما مبلغ را فعلاً از فرانت یا دیتای بازگشتی نداریم، مگر اینکه فانکشن برگرداند.
+            // اگر فانکشن مبلغ را برنمی‌گرداند، می‌توانیم "تایید شده" بنویسیم یا فانکشن را آپدیت کنیم.
+            // فعلاً فرض می‌کنیم فانکشن ما در نسخه جدید فقط RefID و Type می‌دهد.
+            // برای نمایش مبلغ بهتر است Edge Function در پاسخ success مقدار amount را هم بفرستد.
+            // اما چون قانون 0 تا 100 فقط برای همین فایل است، فعلا 0 نشان میدهیم یا "پرداخت کامل".
+            // (در یک سناریوی ایده‌آل، Edge Function باید Amount را هم برگرداند).
+            
+            document.getElementById('amount-val').innerText = 'تایید شده'; 
+            document.getElementById('amount-val').nextElementSibling.innerText = ''; // حذف کلمه تومان اگر مبلغ نداریم
+
+            document.getElementById('ref-id').innerText = data.refId || '---';
+            document.getElementById('track-id').innerText = authority;
+            document.getElementById('date-val').innerText = new Date().toLocaleDateString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+            
+            // تعیین نوع تراکنش برای نمایش
+            successfulTransactionType = data.type; // 'order' or 'subscription'
+            const typeText = (data.type === 'subscription') ? 'خرید اشتراک ویژه' : 'سفارش محصول';
+            document.getElementById('trans-type').innerText = typeText;
+
+            // نمایش دکمه‌ها
+            const mainBtn = document.getElementById('btn-main-action');
+            const mainBtnText = document.getElementById('btn-main-text');
+            
+            if (data.type === 'subscription') {
+                mainBtnText.innerText = 'ورود به پنل فروشندگان';
+            } else {
+                mainBtnText.innerText = 'بازگشت به فروشگاه';
+            }
+            
+            mainBtn.classList.remove('hidden');
+            document.getElementById('btn-download').classList.remove('hidden');
+
+            // جشن!
+            fireConfetti();
+        }
+
+        function renderError(msg, code = '') {
+            document.getElementById('loader-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+
+            const header = document.getElementById('status-header');
+            header.className = 'status-header error';
+            
+            document.getElementById('status-icon-i').className = 'fas fa-times';
+            document.getElementById('status-title').innerText = 'پرداخت ناموفق';
+            document.getElementById('status-desc').innerText = msg + (code ? ` (کد: ${code})` : '');
+
+            document.getElementById('amount-val').innerText = '0';
+            document.getElementById('ref-id').innerText = '---';
+            document.getElementById('track-id').innerText = authority || '---';
+            document.getElementById('date-val').innerText = new Date().toLocaleDateString('fa-IR');
+            document.getElementById('trans-type').innerText = 'تراکنش ناموفق';
+
+            // نمایش دکمه تلاش مجدد
+            document.getElementById('btn-retry').classList.remove('hidden');
+        }
+
+        // عملکرد دکمه اصلی (هوشمند)
+        window.handleMainAction = () => {
+            if (successfulTransactionType === 'subscription') {
+                // اگر اشتراک خریده، برود به داشبورد اصلی
+                window.location.href = 'index.html'; 
+            } else {
+                // اگر محصول خریده، برود به فروشگاه (یا لیست سفارشات اگر دارید)
+                window.location.href = 'store.html'; // یا orders.html
+            }
+        };
+
+        // دانلود رسید
+        window.downloadReceipt = () => {
+            const captureArea = document.getElementById('capture-area');
+            const downloadBtn = document.getElementById('btn-download');
+            
+            // تغییر متن موقت دکمه
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            html2canvas(captureArea, { scale: 2, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Receipt-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                downloadBtn.innerHTML = originalText;
+                
+                Toastify({
+                    text: "رسید با موفقیت ذخیره شد",
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: "center",
+                    style: { background: "#10b981" }
+                }).showToast();
+            });
+        };
+
+        function fireConfetti() {
+            var count = 200;
+            var defaults = { origin: { y: 0.7 } };
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * particleRatio) }));
+            }
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+
+        // شروع فرآیند
+        verifyPayment();
+
+    </script>
+</body>
+</html>
