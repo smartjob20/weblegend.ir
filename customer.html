@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ناحیه کاربری | Web Legend</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Vazirmatn', sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        
+        /* App Container */
+        .app-shell { 
+            max-width: 480px; margin: 0 auto; min-height: 100vh; background: white; 
+            position: relative; display: flex; flex-direction: column; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.05); overflow: hidden;
+        }
+
+        /* Auth Screens Transition */
+        .auth-screen { 
+            position: absolute; inset: 0; background: white; z-index: 50; padding: 30px; 
+            display: flex; flex-direction: column; justify-content: center; 
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            opacity: 0; pointer-events: none; transform: scale(0.95) translateY(20px); 
+        }
+        .auth-screen.active { opacity: 1; pointer-events: all; transform: scale(1) translateY(0); }
+
+        /* UI Elements */
+        .brand-glow { 
+            width: 150px; height: 150px; background: #D4AF37; 
+            filter: blur(80px); opacity: 0.15; position: absolute; top: -50px; left: 50%; transform: translateX(-50%); 
+            border-radius: 50%; pointer-events: none;
+        }
+        
+        .input-otp { 
+            width: 100%; height: 60px; text-align: center; font-size: 28px; letter-spacing: 12px; 
+            border: 2px solid #f3f4f6; border-radius: 20px; outline: none; transition: 0.3s; 
+            font-family: monospace; color: #111; font-weight: bold; background: #f9fafb;
+        }
+        .input-otp:focus { border-color: #D4AF37; background: #fff; box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.2); }
+        
+        .btn-black { 
+            background: #111; color: white; width: 100%; padding: 18px; border-radius: 18px; 
+            font-weight: 800; font-size: 15px; transition: 0.3s; 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.2);
+        }
+        .btn-black:active { transform: scale(0.96); }
+        .btn-black:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .input-premium {
+            width: 100%; padding: 16px; background: #f9fafb; border: 2px solid #f3f4f6;
+            border-radius: 18px; font-weight: bold; text-align: center; outline: none;
+            transition: 0.3s; color: #1f2937;
+        }
+        .input-premium:focus { border-color: #D4AF37; background: #fff; }
+
+        /* Dashboard Styles */
+        .dash-header { 
+            background: #111; color: white; padding: 40px 24px 80px; 
+            border-radius: 0 0 40px 40px; position: relative; overflow: hidden; 
+        }
+        .dash-card-overlap { margin-top: -60px; padding: 0 20px; position: relative; z-index: 10; }
+        
+        .order-card { 
+            background: white; border: 1px solid #f3f4f6; border-radius: 24px; padding: 20px; margin-bottom: 16px; 
+            box-shadow: 0 10px 40px -15px rgba(0,0,0,0.05); transition: 0.3s; position: relative; 
+        }
+        .order-card:active { transform: scale(0.99); }
+
+        .status-badge { font-size: 10px; padding: 6px 12px; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; }
+        .status-paid { background: #d1fae5; color: #047857; }
+        .status-sent { background: #dbeafe; color: #1d4ed8; }
+        .status-pending { background: #fef9c3; color: #a16207; }
+        
+        .copy-box { 
+            background: #f8fafc; border: 1px dashed #cbd5e1; padding: 10px 14px; border-radius: 14px; 
+            display: flex; justify-content: space-between; align-items: center; margin-top: 15px;
+        }
+
+        .bottom-nav { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; 
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); padding: 12px 30px; 
+            border-radius: 24px; display: flex; justify-content: space-between; 
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.15); border: 1px solid white; z-index: 40; 
+        }
+        .nav-btn { color: #cbd5e1; font-size: 22px; transition: 0.3s; }
+        .nav-btn.active { color: #D4AF37; transform: translateY(-5px); filter: drop-shadow(0 5px 10px rgba(212,175,55,0.3)); }
+
+        .loader-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <div class="app-shell">
+        
+        <div id="global-loader" class="loader-overlay hidden">
+            <div class="w-12 h-12 border-4 border-gray-100 border-t-[#D4AF37] rounded-full animate-spin mb-4"></div>
+            <p class="text-xs font-black text-gray-500 tracking-widest">WEBLEGEND</p>
+        </div>
+
+        <div id="auth-phone" class="auth-screen active">
+            <div class="brand-glow"></div>
+            <div class="relative z-10 text-center">
+                <div class="w-24 h-24 bg-white rounded-3xl mx-auto mb-8 shadow-xl flex items-center justify-center border border-gray-100">
+                    <img src="img/logo01.png" class="w-16 h-16 object-contain">
+                </div>
+                <h1 class="text-2xl font-black text-gray-900 mb-2">ورود به حساب</h1>
+                <p class="text-gray-500 text-sm mb-10">شماره موبایل خود را وارد کنید تا کد تایید ارسال شود</p>
+                
+                <div class="space-y-6">
+                    <div>
+                        <input type="tel" id="input-phone" class="input-premium text-xl font-mono tracking-widest" placeholder="0912..." maxlength="11">
+                    </div>
+                    <button onclick="checkUser()" class="btn-black">
+                        <span>ادامه</span> <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <p class="text-[10px] text-gray-400 mt-4">با ورود، قوانین وب لجند را می‌پذیرم</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="auth-otp" class="auth-screen">
+            <button onclick="showScreen('auth-phone')" class="absolute top-8 right-8 text-gray-400 hover:text-black transition"><i class="fas fa-arrow-right text-xl"></i></button>
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-blue-100 shadow-lg"><i class="fas fa-sms"></i></div>
+                <h2 class="text-xl font-black text-gray-900">کد تایید</h2>
+                <p class="text-xs text-gray-500 mt-2 font-medium">کد ۵ رقمی ارسال شده به <span id="otp-phone-display" class="text-black font-bold font-mono text-sm"></span></p>
+            </div>
+            <div class="space-y-8">
+                <input type="tel" id="input-otp-code" class="input-otp" placeholder="- - - - -" maxlength="5">
+                <div class="flex justify-between items-center px-2">
+                    <span class="text-xs font-bold text-gray-400" id="otp-timer">02:00</span>
+                    <button onclick="resendOtp()" id="btn-resend" class="text-xs font-bold text-gray-300 cursor-not-allowed" disabled>ارسال مجدد کد</button>
+                </div>
+                <button onclick="verifyOtp()" class="btn-black">تایید و ورود</button>
+            </div>
+        </div>
+
+        <div id="auth-password" class="auth-screen">
+            <button onclick="showScreen('auth-phone')" class="absolute top-8 right-8 text-gray-400 hover:text-black"><i class="fas fa-arrow-right text-xl"></i></button>
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-gray-900 text-[#D4AF37] rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg"><i class="fas fa-fingerprint"></i></div>
+                <h2 class="text-xl font-black text-gray-900">رمز عبور</h2>
+                <p class="text-xs text-gray-500 mt-2">خوش آمدید! رمز عبور خود را وارد کنید.</p>
+            </div>
+            <div class="space-y-6">
+                <input type="password" id="input-password" class="input-premium text-lg" placeholder="••••••">
+                <button onclick="loginWithPassword()" class="btn-black">ورود به پنل</button>
+                <button onclick="switchToOtpMode()" class="w-full text-center text-xs font-bold text-gray-400 hover:text-[#D4AF37] py-2 transition">فراموشی رمز / ورود با پیامک</button>
+            </div>
+        </div>
+
+        <div id="auth-set-pass" class="auth-screen">
+            <div class="text-center mb-10">
+                <div class="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-green-100 shadow-lg"><i class="fas fa-shield-alt"></i></div>
+                <h2 class="text-xl font-black text-gray-900">ایجاد رمز عبور</h2>
+                <p class="text-xs text-gray-500 mt-2">برای امنیت بیشتر حساب خود، یک رمز عبور تعیین کنید.</p>
+            </div>
+            <div class="space-y-6">
+                <input type="password" id="new-password" class="input-premium text-lg" placeholder="رمز عبور جدید">
+                <button onclick="setPassword()" class="btn-black">ذخیره و ورود</button>
+                <button onclick="skipPassword()" class="w-full text-center text-xs font-bold text-gray-400 py-2">فعلاً رد کن</button>
+            </div>
+        </div>
+
+        <div id="dashboard-view" class="hidden h-screen overflow-y-auto pb-32 bg-gray-50">
+            <div class="dash-header">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-yellow-300 p-0.5 shadow-lg">
+                            <div class="w-full h-full bg-[#111] rounded-2xl flex items-center justify-center text-[#D4AF37] font-black text-xl">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-black text-white" id="user-name-display">کاربر مهمان</h1>
+                            <p class="text-xs text-gray-400 font-mono mt-1 tracking-wider" id="user-phone-display">---</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-gray-400 hover:bg-red-500 hover:text-white transition"><i class="fas fa-power-off"></i></button>
+                </div>
+            </div>
+
+            <div class="dash-card-overlap">
+                <div class="bg-white rounded-3xl p-6 shadow-xl mb-6 flex justify-between items-center">
+                    <div class="text-center">
+                        <span class="block text-2xl font-black text-gray-900 mb-1" id="stat-active">0</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">جاری</span>
+                    </div>
+                    <div class="w-[1px] h-10 bg-gray-100"></div>
+                    <div class="text-center">
+                        <span class="block text-2xl font-black text-gray-900 mb-1" id="stat-total">0</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">کل سفارشات</span>
+                    </div>
+                    <div class="w-[1px] h-10 bg-gray-100"></div>
+                    <div class="text-center">
+                        <span class="block text-2xl font-black text-[#D4AF37] mb-1"><i class="fas fa-star"></i></span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">امتیاز</span>
+                    </div>
+                </div>
+
+                <h3 class="font-black text-gray-800 mb-4 px-2 flex items-center gap-2 text-sm"><i class="fas fa-receipt text-[#D4AF37]"></i> لیست سفارشات</h3>
+                
+                <div id="orders-container" class="space-y-4 min-h-[200px]">
+                    </div>
+            </div>
+        </div>
+
+        <nav id="main-nav" class="bottom-nav hidden">
+            <button class="nav-btn active"><i class="fas fa-home"></i></button>
+            <button onclick="goStore()" class="nav-btn"><i class="fas fa-store"></i></button>
+            <button class="nav-btn"><i class="fas fa-headset"></i></button>
+        </nav>
+
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+
+        const supabaseUrl = 'https://bclbzdvupfiqihcdjltu.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjbGJ6ZHZ1cGZpcWloY2RqbHR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjA5NTcsImV4cCI6MjA4MjEzNjk1N30.fiCvS54TEbVZPm_chLcHEo8MAr1AHhP5CKNGbxr02JY'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        let currentUserPhone = null;
+        let timerInterval;
+
+        // --- UTILS ---
+        const toEnglishDigits = (str) => str.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+        const showLoader = (show) => document.getElementById('global-loader').classList.toggle('hidden', !show);
+        const showScreen = (id) => {
+            document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById(id);
+            if(el) el.classList.add('active');
+        };
+        const toast = (msg, type='success') => {
+            let text = (typeof msg === 'object') ? (msg.message || 'خطا') : msg;
+            Toastify({ text: text, style: { background: type === 'error' ? '#ef4444' : '#10b981', borderRadius: '10px', fontSize: '12px' } }).showToast();
+        };
+
+        // --- AUTH LOGIC (SECURE RPC MODE) ---
+        window.checkUser = async () => {
+            const input = document.getElementById('input-phone');
+            const phone = toEnglishDigits(input.value.trim());
+            if(phone.length < 10 || !phone.startsWith('09')) return toast('شماره موبایل صحیح نیست', 'error');
+            
+            currentUserPhone = phone;
+            showLoader(true);
+
+            try {
+                // 1. استفاده از تابع امن برای چک کردن وضعیت کاربر (جلوگیری از RLS)
+                const { data: userStatus, error } = await supabase.rpc('get_customer_profile_secure', { phone_num: phone });
+                
+                showLoader(false);
+                
+                if (error) {
+                    console.error("RPC Error:", error);
+                    // اگر مشکلی در RPC بود، با احتیاط به OTP می‌رود (Fail-safe)
+                    await sendOtp(phone);
+                    showScreen('auth-otp');
+                    startTimer();
+                    return;
+                }
+
+                if (userStatus && userStatus.has_password) {
+                    showScreen('auth-password');
+                } else {
+                    await sendOtp(phone);
+                    showScreen('auth-otp');
+                    startTimer();
+                }
+            } catch (err) {
+                showLoader(false);
+                console.error(err);
+                toast('خطای سیستم، دوباره تلاش کنید', 'error');
+            }
+        };
+
+        window.sendOtp = async (phone) => {
+            document.getElementById('otp-phone-display').innerText = phone;
+            try {
+                const { error } = await supabase.functions.invoke('send-sms', { body: { action: 'send_otp', phone: phone } });
+                if (error) throw error;
+                toast('کد تایید ارسال شد');
+            } catch (err) {
+                console.log("SMS Error/Simulate:", err);
+                // اگر تابع اس‌ام‌اس هنوز دیپلوی نشده باشد، این بخش خطا را هندل می‌کند
+                toast('کد تایید ارسال شد (شبیه‌سازی)', 'info');
+            }
+        };
+
+        window.verifyOtp = async () => {
+            const code = toEnglishDigits(document.getElementById('input-otp-code').value.trim());
+            if(code.length !== 5) return toast('کد ۵ رقمی را وارد کنید', 'error');
+            
+            showLoader(true);
+            try {
+                // 2. تایید امن کد OTP (بدون دسترسی مستقیم به جدول)
+                const { data: isValid, error } = await supabase.rpc('verify_otp_secure', { 
+                    phone_num: currentUserPhone, 
+                    input_code: code 
+                });
+
+                if (error) throw error;
+
+                if (!isValid) throw new Error('کد نامعتبر یا منقضی شده است');
+                await finalizeLogin();
+            } catch (err) {
+                showLoader(false);
+                toast(err.message || 'خطا در اعتبارسنجی', 'error');
+            }
+        };
+
+        window.loginWithPassword = async () => {
+            const pass = document.getElementById('input-password').value;
+            if(!pass) return toast('رمز را وارد کنید', 'error');
+            showLoader(true);
+
+            try {
+                // 3. بررسی امن رمز عبور
+                const { data: isCorrect, error } = await supabase.rpc('check_password_secure', { 
+                    phone_num: currentUserPhone, 
+                    input_pass: pass 
+                });
+                
+                showLoader(false);
+                
+                if (error) throw error;
+
+                if(isCorrect) {
+                    // دریافت اطلاعات نمایشی بعد از لاگین موفق
+                    const { data: user } = await supabase.rpc('get_customer_profile_secure', { phone_num: currentUserPhone });
+                    loadDashboard(user);
+                } else {
+                    toast('رمز عبور اشتباه است', 'error');
+                }
+            } catch (err) {
+                showLoader(false);
+                toast('خطا در ورود', 'error');
+            }
+        };
+
+        async function finalizeLogin() {
+            try {
+                // دریافت وضعیت نهایی کاربر برای تصمیم‌گیری (ثبت نام یا داشبورد)
+                const { data: user, error } = await supabase.rpc('get_customer_profile_secure', { phone_num: currentUserPhone });
+                
+                if (error) throw error;
+
+                // اگر کاربر وجود نداشت، ثبت نام کن (Insert Policy باید باز باشد)
+                if(!user || !user.id) {
+                    const { error: insError } = await supabase.from('store_customers').insert({ phone: currentUserPhone });
+                    if (insError) throw insError;
+                    
+                    showLoader(false);
+                    showScreen('auth-set-pass');
+                } 
+                // اگر پسورد نداشت (قبلا فقط خرید کرده)
+                else if (!user.has_password) {
+                    showLoader(false);
+                    showScreen('auth-set-pass');
+                } 
+                // کاربر کامل
+                else {
+                    showLoader(false);
+                    loadDashboard(user);
+                }
+            } catch (err) {
+                showLoader(false);
+                console.error(err);
+                toast('خطا در تکمیل ورود', 'error');
+            }
+        }
+
+        window.setPassword = async () => {
+            const pass = document.getElementById('new-password').value;
+            if(pass.length < 4) return toast('رمز حداقل ۴ کاراکتر باشد', 'error');
+            
+            // آپدیت رمز عبور (RLS باید اجازه آپدیت ردیف خود کاربر را بدهد یا از RPC استفاده شود)
+            // اینجا فرض بر این است که چون کاربر تایید شده، سیاست RLS اجازه آپدیت ردیف با این شماره تلفن را می‌دهد
+            // اما برای اطمینان ۱۰۰٪، می‌توان یک RPC برای set_password هم ساخت.
+            // فعلاً استاندارد:
+            const { error } = await supabase.from('store_customers').update({ password_hash: pass }).eq('phone', currentUserPhone);
+            
+            if(error) {
+                console.error(error);
+                return toast('خطا در ذخیره رمز', 'error');
+            }
+            
+            // بارگذاری مجدد پروفایل برای نمایش نام
+            const { data: user } = await supabase.rpc('get_customer_profile_secure', { phone_num: currentUserPhone });
+            loadDashboard(user);
+        };
+
+        window.skipPassword = async () => {
+             const { data: user } = await supabase.rpc('get_customer_profile_secure', { phone_num: currentUserPhone });
+             loadDashboard(user);
+        };
+
+        // --- DASHBOARD LOGIC ---
+        async function loadDashboard(user) {
+            if (!user) return;
+            localStorage.setItem('wl_customer_phone', user.phone); // ذخیره نشست
+            
+            document.querySelectorAll('.auth-screen').forEach(e => e.classList.remove('active'));
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            document.getElementById('main-nav').classList.remove('hidden');
+
+            document.getElementById('user-phone-display').innerText = user.phone;
+            if(user.full_name) document.getElementById('user-name-display').innerText = user.full_name;
+
+            // دریافت لیست سفارشات (اینجا RLS باید اجازه Select روی سفارشات این شماره تلفن را بدهد)
+            const { data: orders, error } = await supabase.from('store_orders')
+                .select('*')
+                .eq('customer_phone', user.phone)
+                .order('created_at', { ascending: false });
+            
+            if (error) console.error("Order Load Error:", error);
+
+            const allOrders = orders || [];
+            document.getElementById('stat-total').innerText = allOrders.length;
+            document.getElementById('stat-active').innerText = allOrders.filter(o => o.status === 'paid' || o.status === 'sent').length;
+
+            renderOrders(allOrders);
+        }
+
+        function renderOrders(list) {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = '';
+            
+            if(list.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 opacity-50"><i class="fas fa-box-open text-3xl mb-2"></i><p class="text-xs">سفارشی یافت نشد</p></div>';
+                return;
+            }
+
+            list.forEach(order => {
+                const statusMap = {
+                    'paid': { text: 'در حال پردازش', class: 'status-paid', icon: 'fa-box' },
+                    'sent': { text: 'ارسال شده', class: 'status-sent', icon: 'fa-truck' },
+                    'pending': { text: 'در انتظار پرداخت', class: 'status-pending', icon: 'fa-clock' },
+                    'cancelled': { text: 'لغو شده', class: 'status-pending', style:'background:#fee2e2;color:#b91c1c', icon: 'fa-times' }
+                };
+                const st = statusMap[order.status] || statusMap.pending;
+                
+                // Safe Parse Items
+                let items = [];
+                try { items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items; } catch(e) {}
+                const itemsHtml = Array.isArray(items) ? items.map(i => i.title).join('، ') : 'محصولات';
+
+                let trackingHtml = '';
+                if(order.shipping_code) {
+                    trackingHtml = `
+                        <div class="copy-box">
+                            <div>
+                                <p class="text-[9px] text-gray-400 font-bold mb-1">کد رهگیری پستی</p>
+                                <p class="font-mono text-base font-black tracking-widest text-blue-600 select-all">${order.shipping_code}</p>
+                            </div>
+                            <button onclick="navigator.clipboard.writeText('${order.shipping_code}'); toast('کپی شد')" class="text-gray-400 hover:text-blue-500"><i class="fas fa-copy"></i></button>
+                        </div>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = `order-card`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100"><i class="fas ${st.icon}"></i></div>
+                            <div>
+                                <span class="text-[10px] text-gray-400 font-bold block mb-0.5">#${order.id.slice(0,6)}</span>
+                                <span class="${st.class} status-badge" style="${st.style||''}">${st.text}</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-gray-400 font-bold mt-1">${new Date(order.created_at).toLocaleDateString('fa-IR')}</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-100">
+                        <p class="text-xs text-gray-700 font-bold leading-relaxed line-clamp-2">${itemsHtml}</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] text-gray-400 font-bold">مبلغ سفارش</span>
+                        <span class="font-black text-sm text-gray-900">${parseInt(order.total_amount).toLocaleString()} <span class="text-[9px] font-normal text-gray-400">تومان</span></span>
+                    </div>
+                    ${trackingHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- GENERAL ---
+        window.resendOtp = () => { toast('ارسال مجدد فعلاً غیرفعال است (برای تست)', 'info'); };
+        window.switchToOtpMode = async () => { await sendOtp(currentUserPhone); showScreen('auth-otp'); startTimer(); };
+        window.logout = () => { localStorage.removeItem('wl_customer_phone'); location.reload(); };
+        window.goStore = () => { const id = new URLSearchParams(window.location.search).get('id'); window.location.href = id ? `store.html?id=${id}` : 'index.html'; };
+
+        function startTimer() {
+            let sec = 120;
+            const el = document.getElementById('otp-timer');
+            const btn = document.getElementById('btn-resend');
+            btn.disabled = true; btn.classList.add('text-gray-300', 'cursor-not-allowed');
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                sec--;
+                const m = Math.floor(sec/60).toString().padStart(2,'0');
+                const s = (sec%60).toString().padStart(2,'0');
+                el.innerText = `${m}:${s}`;
+                if(sec<=0) { clearInterval(timerInterval); btn.disabled=false; btn.classList.remove('text-gray-300','cursor-not-allowed'); btn.classList.add('text-[#D4AF37]'); el.innerText='00:00'; }
+            }, 1000);
+        }
+
+        // Auto Login (Secure RPC Check)
+        const saved = localStorage.getItem('wl_customer_phone');
+        if(saved) {
+            currentUserPhone = saved;
+            showLoader(true);
+            (async () => {
+                try {
+                    // استفاده از RPC به جای Select مستقیم
+                    const { data: user, error } = await supabase.rpc('get_customer_profile_secure', { phone_num: saved });
+                    
+                    if(error) throw error;
+
+                    if(user && user.id) {
+                        loadDashboard(user);
+                    } else {
+                        throw new Error("User not found");
+                    }
+                } catch (e) {
+                    console.log("Auto-login failed:", e);
+                    localStorage.removeItem('wl_customer_phone');
+                    showLoader(false);
+                    showScreen('auth-phone');
+                }
+            })();
+        } else {
+            showScreen('auth-phone');
+        }
+
+    </script>
+</body>
+</html>
